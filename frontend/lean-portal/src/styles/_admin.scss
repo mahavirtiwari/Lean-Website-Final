@@ -129,6 +129,8 @@
   // actions; on a narrow window, or with the reader's text enlarged, the last
   // column used to be cut off with no way to reach it.
   overflow-x: auto;
+  // Keeps screen-reader-only text in the cells inside the scroller; see .scroll-x.
+  position: relative;
 }
 
 .admin-table {

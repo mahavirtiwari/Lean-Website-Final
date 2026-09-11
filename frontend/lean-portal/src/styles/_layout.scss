@@ -8,6 +8,10 @@
   max-width: var(--container);
   margin-inline: auto;
   padding-inline: var(--gutter);
+  // index.html asks for the whole screen (viewport-fit=cover), notch included.
+  // On an iPhone held sideways the notch covers the first 44px or so of one side;
+  // this keeps the content out from under it. Everywhere else the insets are 0.
+  padding-inline: max(var(--gutter), env(safe-area-inset-left)) max(var(--gutter), env(safe-area-inset-right));
 }
 
 .container--narrow {
@@ -238,7 +242,11 @@
 .scroll-x {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-
+  // The containing block for anything absolutely positioned inside - the
+  // screen-reader-only text in a cell is. Without it that text is placed against
+  // the page instead, outside the scroller, and a phone widens its whole layout to
+  // reach it: the Programmes pages were 1,231px wide on a 320px screen.
+  position: relative;
 
   // A table inside the wrapper must not shrink its columns to fit - that is what
   // the horizontal scroll is for.

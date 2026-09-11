@@ -1,4 +1,14 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  ElementRef,
+  HostListener,
+  computed,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { ContentService } from '../../core/services/content.service';
@@ -125,6 +135,20 @@ export class AdminLayoutComponent {
 
   protected closeSidebar(): void {
     this.sidebarOpen.set(false);
+  }
+
+  private readonly sidebarToggle = viewChild<ElementRef<HTMLButtonElement>>('sidebarToggle');
+
+  /**
+   * On a tablet the sidebar opens over the page and covers the button that
+   * opened it; Escape closes it, as it does the public site's menu, and hands
+   * focus back to that button.
+   */
+  @HostListener('document:keydown.escape')
+  protected onEscape(): void {
+    if (!this.sidebarOpen()) return;
+    this.closeSidebar();
+    this.sidebarToggle()?.nativeElement.focus();
   }
 
   protected logout(): void {

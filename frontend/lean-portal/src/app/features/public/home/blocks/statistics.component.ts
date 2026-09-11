@@ -155,6 +155,8 @@ import { BlockBase } from './block-base';
 
       .stat__label--link {
         display: block;
+        /* 18px of text is too small a target on its own (WCAG 2.5.8). */
+        padding-block: 4px;
 
         &:hover {
           color: #fff;

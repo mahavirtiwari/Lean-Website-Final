@@ -147,8 +147,11 @@ interface Turn {
       [class.is-open]="open()"
       (click)="toggle()"
       [attr.aria-expanded]="open()"
-      [attr.aria-label]="open() ? 'Close the assistant' : 'Open the assistant'"
+      [attr.aria-label]="open() ? 'Close the assistant' : null"
     >
+      <!-- Closed, the button is named by its visible words, so someone using voice
+           control can say what they see (WCAG 2.5.3). On a phone the words are
+           hidden to free the screen, and still name it for a screen reader. -->
       <app-icon [name]="open() ? 'close' : 'help-circle'" [size]="20" />
       @if (!open()) {
         <span>{{ title() }}</span>

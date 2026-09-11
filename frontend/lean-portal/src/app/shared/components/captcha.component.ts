@@ -92,6 +92,8 @@ import { IconComponent } from './icon.component';
 
       .captcha__switch {
         margin: 0 0 var(--sp-3);
+        /* A target a thumb can hit; the words alone were 21px tall. */
+        min-height: 32px;
         padding: 0;
         border: 0;
         background: none;

@@ -6,6 +6,14 @@
 //  scheme mark, the menu and the reader utilities.
 // =============================================================================
 
+// A sticky element sticks only within its parent. As an ordinary block this host
+// was exactly as tall as the strip and the masthead, so the masthead had nowhere
+// to stick and scrolled away with the page on every screen. With the host out of
+// the box tree, the page's layout is the parent and the masthead stays put.
+:host {
+  display: contents;
+}
+
 // -------------------------------------------------- government identity strip ----
 
 .top-strip {
@@ -147,6 +155,11 @@
   :global(.bhashini-dropdown-btn) {
     height: 40px;
   }
+}
+
+// The drawer's own heading and close button; the bar has no use for them.
+.main-nav__head {
+  display: none;
 }
 
 .menu-btn {
@@ -423,16 +436,66 @@
     justify-content: flex-start;
     gap: 0;
     margin: 0;
-    padding: var(--sp-6) var(--sp-5) var(--sp-8);
+    padding: 0 calc(var(--sp-5) + env(safe-area-inset-right)) calc(var(--sp-8) + env(safe-area-inset-bottom))
+      var(--sp-5);
     overflow-y: auto;
     overscroll-behavior: contain;
     background: var(--c-surface);
     box-shadow: var(--shadow-lg);
     transform: translateX(100%);
-    transition: transform var(--transition-slow);
+    // Hidden as well as moved: off-screen alone, its links stayed in the tab order
+    // and a keyboard user tabbed through a menu they could not see. Visibility
+    // flips at the end of the slide out and the start of the slide in.
+    visibility: hidden;
+    transition:
+      transform var(--transition-slow),
+      visibility var(--transition-slow);
 
     &.is-open {
       transform: translateX(0);
+      visibility: visible;
+      // Visible at once when opening, so focus can move into it straight away.
+      transition:
+        transform var(--transition-slow),
+        visibility 0s;
+    }
+  }
+
+  .main-nav__head {
+    // Stays at the top while a long menu with its sections open is scrolled.
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--c-surface);
+    margin: 0 0 var(--sp-3);
+    padding: var(--sp-3) 0;
+    border-bottom: 1px solid var(--c-border);
+  }
+
+  .main-nav__title {
+    font-family: var(--font-heading);
+    font-size: calc(var(--fs-md) * var(--font-scale));
+    font-weight: 700;
+    color: var(--c-ink-strong);
+  }
+
+  .main-nav__close {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    color: var(--c-navy);
+    background: none;
+    border: 1px solid var(--c-border-strong);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+
+    &:hover {
+      border-color: var(--c-primary);
+      color: var(--c-primary);
     }
   }
 
@@ -465,8 +528,10 @@
       justify-content: center;
     }
 
-    // Home reads as icon-then-word here, not as a label pushed to the far edge.
+    // Home reads as icon-then-word here, not as a label pushed to the far edge,
+    // and in line with the rows below - the bar's pull to the left is for the bar.
     &.main-nav__link--home {
+      margin-left: 0;
       gap: var(--sp-3);
       justify-content: flex-start;
     }
@@ -531,24 +596,77 @@
   }
 }
 
-// On the narrowest devices the two marks plus three controls do not fit, so the
-// scheme mark alone identifies the site; the ministry is still named in the
-// strip directly above it.
+// On a phone the two marks and the three controls do not fit on one line. The
+// ministry's lockup carries the State Emblem, and GIGW expects the government's
+// identity on every page at every size - so rather than drop it, the masthead
+// becomes two rows: both marks, then the controls. The sticky offset lets the
+// marks scroll away with the page while the controls row stays at the top, so a
+// phone does not give up a hundred pixels of screen for good.
+$brand-row: 58px;
+
 @media (max-width: 520px) {
-  .brand__ministry,
-  .brand__divider {
-    display: none;
+  .site-header {
+    top: -$brand-row;
+  }
+
+  .header-inner {
+    flex-wrap: wrap;
+    row-gap: 0;
+    min-height: 0;
+    padding-block: 0;
+  }
+
+  .brand {
+    flex: 1 0 100%;
+    height: $brand-row;
+  }
+
+  .brand__ministry {
+    height: 38px;
   }
 
   .brand__scheme {
-    height: 50px;
+    height: 42px;
   }
 
-  .top-strip {
-    font-size: 0.6875rem;
+  .brand__divider {
+    height: 30px;
   }
 
   .header-utilities {
+    flex: 1 0 100%;
+    justify-content: flex-end;
     gap: 4px;
+    min-height: 52px;
+    border-top: 1px solid var(--c-border);
+  }
+
+  // The ministry is named in its lockup just below; the strip keeps to the
+  // government, on one line instead of three.
+  .top-strip {
+    font-size: 0.75rem;
+  }
+
+  .top-strip__ministry {
+    display: none;
+  }
+}
+
+// A phone on its side is wide enough for the one-row masthead but only about
+// 375px tall, and a pinned 85px bar would take a quarter of it on every page.
+// There it scrolls away with the page; the menu is a short scroll up.
+@media (max-height: 500px) and (min-width: 521px) {
+  .site-header {
+    position: relative;
+  }
+}
+
+@media (max-width: 359px) {
+  .brand__ministry {
+    height: 33px;
+  }
+
+  .brand__scheme {
+    height: 37px;
   }
 }

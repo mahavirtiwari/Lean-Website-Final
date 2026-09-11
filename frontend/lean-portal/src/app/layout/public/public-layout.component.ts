@@ -110,6 +110,9 @@ import { SiteHeaderComponent } from './site-header.component';
         display: flex;
         flex-direction: column;
         min-height: 100vh;
+        /* A phone's 100vh includes the address bar it is showing; dvh is the
+           height actually visible. Older browsers keep the line above. */
+        min-height: 100dvh;
       }
 
       .site-main {
@@ -119,8 +122,9 @@ import { SiteHeaderComponent } from './site-header.component';
 
       .to-top {
         position: fixed;
-        right: var(--sp-5);
-        bottom: var(--sp-5);
+        right: calc(var(--sp-5) + env(safe-area-inset-right));
+        /* Clear of an iPhone's home indicator, which the page is drawn under. */
+        bottom: calc(var(--sp-5) + env(safe-area-inset-bottom));
         z-index: var(--z-sticky);
         display: grid;
         place-items: center;

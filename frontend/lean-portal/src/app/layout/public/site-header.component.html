@@ -3,9 +3,11 @@
   <div class="container top-strip__inner">
     <span class="top-strip__gov">
       भारत सरकार | {{ settings()['site.government'] || 'Government of India' }}
-      <span class="top-strip__dot" aria-hidden="true">·</span>
-      {{ settings()['site.ministryHindi'] || 'सूक्ष्म, लघु और मध्यम उद्यम मंत्रालय' }} |
-      {{ settings()['site.ministry'] || 'Ministry of Micro, Small and Medium Enterprises' }}
+      <span class="top-strip__ministry">
+        <span class="top-strip__dot" aria-hidden="true">·</span>
+        {{ settings()['site.ministryHindi'] || 'सूक्ष्म, लघु और मध्यम उद्यम मंत्रालय' }} |
+        {{ settings()['site.ministry'] || 'Ministry of Micro, Small and Medium Enterprises' }}
+      </span>
     </span>
 
   </div>
@@ -67,6 +69,7 @@
       }
 
       <button
+        #menuBtn
         type="button"
         class="menu-btn"
         (click)="toggleMenu()"
@@ -85,6 +88,17 @@
       [class.is-open]="menuOpen()"
       aria-label="Main navigation"
     >
+      <!-- Drawer only. The drawer covers the masthead's menu button, so without
+           its own close control the only ways out were Escape and a sliver of
+           page beside it. -->
+      <div class="main-nav__head">
+        <span class="main-nav__title">Menu</span>
+        <button #closeBtn type="button" class="main-nav__close" (click)="closeMenu(true)">
+          <app-icon name="close" [size]="22" />
+          <span class="sr-only">Close menu</span>
+        </button>
+      </div>
+
       <ul class="main-nav__list">
         @for (item of mainMenu(); track item.id) {
           <li
@@ -175,5 +189,5 @@
 </header>
 
 @if (menuOpen()) {
-  <button type="button" class="nav-scrim" (click)="closeMenu()" aria-label="Close menu" tabindex="-1"></button>
+  <button type="button" class="nav-scrim" (click)="closeMenu(true)" aria-label="Close menu" tabindex="-1"></button>
 }

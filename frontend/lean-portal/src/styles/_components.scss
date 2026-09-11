@@ -365,9 +365,20 @@
   }
 
   &:focus {
-    outline: none;
+    // Transparent rather than none: Windows high-contrast mode drops the box
+    // shadow and paints outlines in its own colour, so this is the focus ring
+    // that is left there.
+    outline: 2px solid transparent;
+    outline-offset: 1px;
     border-color: var(--c-primary);
     box-shadow: var(--focus-ring);
+  }
+
+  // Safari on iPhone and iPad zooms the page into any field whose text is under
+  // 16px, and does not zoom back out - the visitor is left with a form wider than
+  // the screen. Narrow screens, and any screen worked by touch.
+  @media (max-width: 767.98px), (pointer: coarse) {
+    font-size: max(16px, calc(var(--fs-base) * var(--font-scale)));
   }
 
   &:disabled {

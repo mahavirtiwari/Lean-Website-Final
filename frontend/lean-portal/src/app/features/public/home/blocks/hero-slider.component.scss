@@ -148,14 +148,24 @@
 
 .hero__dots {
   display: flex;
-  gap: var(--sp-2);
+  // Wide enough that the 24px touch areas below sit side by side without overlapping.
+  gap: 14px;
 }
 
 .hero__dot {
+  position: relative;
   width: 10px;
   height: 10px;
   padding: 0;
   border-radius: 50%;
+
+  // The dot is drawn at 10px, but a finger needs more: this invisible square
+  // makes each one a 24px target (WCAG 2.5.8) without changing how it looks.
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -7px;
+  }
   background: rgba(255, 255, 255, 0.4);
   transition:
     background-color var(--transition),

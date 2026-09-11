@@ -236,8 +236,11 @@
   // rather than the icon beside a stacked pair.
   li {
     display: flex;
+    // Wraps when it must: with the reader's text enlarged on a phone, the number
+    // and its label no longer fit on one line and ran off the screen.
+    flex-wrap: wrap;
     align-items: baseline;
-    gap: var(--sp-2);
+    gap: 2px var(--sp-2);
     line-height: var(--lh-snug);
   }
 
@@ -506,4 +509,12 @@
   .field {
     margin: 0;
   }
+}
+
+// Tap to call, tap to write: on a phone these are the most used links on the
+// page, and at their text height alone (22px) they were small targets.
+a[href^='tel:'],
+a[href^='mailto:'] {
+  display: inline-block;
+  padding-block: 0.3rem;
 }

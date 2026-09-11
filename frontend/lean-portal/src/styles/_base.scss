@@ -40,6 +40,11 @@ body {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   min-height: 100vh;
+  // A word longer than the line breaks rather than running off the screen. Web
+  // addresses written into the content - udyamregistration.gov.in on How to
+  // Register - are single words, and with the reader's text enlarged on a phone
+  // they pushed the whole page sideways. Ordinary words are never split.
+  overflow-wrap: break-word;
 }
 
 img,

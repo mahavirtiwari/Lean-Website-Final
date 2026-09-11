@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, Component, HostListener, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  HostListener,
+  computed,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { readLogo } from '../../core/branding';
@@ -96,17 +105,33 @@ export class SiteHeaderComponent {
 
   @HostListener('document:keydown.escape')
   protected onEscape(): void {
-    this.closeMenu();
+    if (this.menuOpen()) this.closeMenu(true);
   }
+
+  private readonly menuBtn = viewChild<ElementRef<HTMLButtonElement>>('menuBtn');
+  private readonly closeBtn = viewChild<ElementRef<HTMLButtonElement>>('closeBtn');
 
   protected toggleMenu(): void {
-    this.menuOpen.update((open) => !open);
-    if (!this.menuOpen()) this.openSubmenu.set(null);
+    if (this.menuOpen()) {
+      this.closeMenu(true);
+      return;
+    }
+    this.menuOpen.set(true);
+    // Into the drawer, so a keyboard or screen reader user is where the menu is
+    // rather than behind it. After the drawer is visible - a hidden element
+    // cannot take focus.
+    setTimeout(() => this.closeBtn()?.nativeElement.focus(), 50);
   }
 
-  protected closeMenu(): void {
+  /**
+   * Closes the drawer. `returnFocus` when the visitor closed it themselves, so
+   * focus goes back to the button that opened it; not when a link was followed,
+   * where the new page is the place to be.
+   */
+  protected closeMenu(returnFocus = false): void {
     this.menuOpen.set(false);
     this.openSubmenu.set(null);
+    if (returnFocus) this.menuBtn()?.nativeElement.focus();
   }
 
   protected toggleSubmenu(item: MenuItem, event: Event): void {

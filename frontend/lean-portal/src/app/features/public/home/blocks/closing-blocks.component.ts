@@ -258,6 +258,8 @@ export class InitiativesBlockComponent extends BlockBase {
 
       .story-card__more {
         align-self: flex-start;
+        // Tall enough to tap: at its text height alone it was 21px.
+        min-height: 32px;
         padding: 0;
         background: none;
         border: 0;

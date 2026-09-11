@@ -265,11 +265,19 @@
     z-index: var(--z-overlay);
     width: 264px;
     transform: translateX(-100%);
-    transition: transform var(--transition-slow);
+    // Hidden as well as moved, or its links stay in the tab order off-screen.
+    visibility: hidden;
+    transition:
+      transform var(--transition-slow),
+      visibility var(--transition-slow);
   }
 
   .admin.sidebar-open .admin-sidebar {
     transform: translateX(0);
+    visibility: visible;
+    transition:
+      transform var(--transition-slow),
+      visibility 0s;
   }
 
   .admin-topbar__toggle {
