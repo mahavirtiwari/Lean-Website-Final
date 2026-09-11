@@ -1,0 +1,40 @@
+# ---------- .NET ----------
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+*.user
+*.suo
+*.userprefs
+.vs/
+publish/
+artifacts/
+*.pdb
+appsettings.Development.local.json
+appsettings.Production.json
+
+# ---------- Node / Angular ----------
+node_modules/
+dist/
+.angular/
+npm-debug.log*
+yarn-error.log*
+.env
+.env.*
+!.env.example
+
+# ---------- Uploads / runtime ----------
+backend/src/LeanPortal.Api/wwwroot/uploads/*
+!backend/src/LeanPortal.Api/wwwroot/uploads/.gitkeep
+logs/
+*.log
+
+# ---------- OS / Editor ----------
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+*.swp
+.idea/
+.vscode/*
+!.vscode/extensions.json

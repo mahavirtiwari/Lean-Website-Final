@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 540" role="img" aria-label="Introduction to the LEAN Scheme">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4a6489"/><stop offset="1" stop-color="#33507e"/>
+    </linearGradient>
+    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+      <path d="M48 0H0V48" fill="none" stroke="#ffffff" stroke-opacity=".07" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="860" height="540" fill="url(#bg)"/>
+  <rect width="860" height="540" fill="url(#grid)"/>
+  
+  <g fill="#ffffff" fill-opacity=".12">
+    <rect x="90" y="300" width="220" height="150" rx="10"/>
+    <rect x="340" y="240" width="220" height="210" rx="10"/>
+    <rect x="590" y="330" width="180" height="120" rx="10"/>
+  </g>
+  <g stroke="#ffffff" stroke-opacity=".3" stroke-width="3" fill="none">
+    <path d="M120 260h160M120 285h100"/>
+  </g>
+  <circle cx="640" cy="200" r="46" fill="#cf4034" fill-opacity=".6"/>
+  <path d="M628 182l32 18-32 18z" fill="#ffffff" fill-opacity=".85"/>
+
+  <text x="836" y="520" text-anchor="end" font-family="Roboto, sans-serif" font-size="13"
+        fill="#ffffff" fill-opacity=".38">Introduction to the LEAN Scheme</text>
+</svg>

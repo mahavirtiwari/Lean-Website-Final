@@ -1,0 +1,298 @@
+.incentive-intro {
+  max-width: 76ch;
+  margin-bottom: var(--sp-6);
+}
+
+/* --- filters ---------------------------------------------------------------- */
+
+.incentive-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-5);
+  padding: var(--sp-4) var(--sp-5);
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+}
+
+.incentive-filters__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  /* Wide enough for the longest state name without stretching to fill the bar. */
+  min-width: 260px;
+}
+
+.incentive-count {
+  margin: 0 0 var(--sp-4);
+  font-size: calc(var(--fs-sm) * var(--font-scale));
+  color: var(--c-ink-muted);
+}
+
+/* --- the list --------------------------------------------------------------- */
+
+.incentives {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--sp-4);
+}
+
+.incentive {
+  padding: var(--sp-5) var(--sp-6);
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+}
+
+.incentive__issuer {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0 0 var(--sp-2);
+  font-size: calc(var(--fs-sm) * var(--font-scale));
+  font-weight: 600;
+  color: var(--c-ink-muted);
+
+  img {
+    max-height: 22px;
+    max-width: 90px;
+    object-fit: contain;
+  }
+}
+
+/* Title and level share a row, the level pushed to the right edge of the card.
+   They wrap to two lines rather than squeezing the title when a long title and a
+   state name meet. */
+.incentive__headline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-2) var(--sp-4);
+  margin-bottom: var(--sp-3);
+}
+
+.incentive__title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: calc(var(--fs-lg) * var(--font-scale));
+  font-weight: 700;
+  line-height: var(--lh-snug);
+  color: var(--c-ink-strong);
+}
+
+.incentive__number {
+  color: var(--c-primary);
+}
+
+.incentive__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.tag {
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--c-primary-soft);
+  color: var(--c-primary-dark);
+  font-size: calc(var(--fs-xs) * var(--font-scale));
+  font-weight: 600;
+}
+
+.tag--state {
+  background: transparent;
+  color: var(--c-ink-muted);
+  border: 1px solid var(--c-border);
+}
+
+.incentive__body {
+  margin-bottom: var(--sp-4);
+  color: var(--c-ink);
+
+  :last-child {
+    margin-bottom: 0;
+  }
+}
+
+/* --- contact and actions ---------------------------------------------------- */
+
+/* Contact and actions share a tinted foot, so the card reads as its wording on
+   white and the things you can do about it below. Negative margins pull it out to
+   the card's edges against the padding above it. */
+.incentive__foot {
+  margin: var(--sp-5) calc(var(--sp-6) * -1) calc(var(--sp-5) * -1);
+  padding: var(--sp-4) var(--sp-6);
+
+  /* A tint of the scheme colour, not the neutral band: the page behind these
+     cards is already --c-band, so using it here made the foot disappear into the
+     background wherever a card ended. Mixed against the surface rather than
+     hard-coded, so it stays a tint of the card in dark and high-contrast modes
+     instead of a pale patch. The plain declaration is the fallback for browsers
+     without color-mix. */
+  background: var(--c-band);
+  background: color-mix(in srgb, var(--c-primary) 9%, var(--c-surface));
+
+  border-top: 1px solid var(--c-border);
+  border-radius: 0 0 var(--radius) var(--radius);
+}
+
+.incentive__contact {
+  list-style: none;
+  margin: 0 0 var(--sp-3);
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2) var(--sp-5);
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    font-size: calc(var(--fs-sm) * var(--font-scale));
+    color: var(--c-ink-muted);
+  }
+
+  app-icon {
+    color: var(--c-primary);
+  }
+}
+
+.incentive__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.incentive__doc {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-sm);
+  font-size: calc(var(--fs-sm) * var(--font-scale));
+  font-weight: 600;
+  color: var(--c-primary-dark);
+
+  &:hover {
+    border-color: var(--c-primary);
+    background: var(--c-primary-soft);
+    text-decoration: none;
+  }
+}
+
+/* Pushed to the end of the row so the claim action is not mistaken for one of
+   the documents beside it. */
+.incentive__avail {
+  margin-inline-start: auto;
+}
+
+.incentive-reset {
+  margin-top: var(--sp-4);
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .incentive {
+    padding: var(--sp-4);
+  }
+
+  .incentive__foot {
+    margin: var(--sp-4) calc(var(--sp-4) * -1) calc(var(--sp-4) * -1);
+    padding: var(--sp-4);
+  }
+
+  .incentive-filters__field {
+    min-width: 100%;
+  }
+
+  /* On one column the auto margin would leave it stranded against the edge. */
+  .incentive__avail {
+    margin-inline-start: 0;
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* --- film ------------------------------------------------------------------- */
+
+/* Sits with the documents, so it reads as one more thing attached to the entry
+   rather than as the entry's headline. */
+.incentive__film {
+  cursor: pointer;
+  background: none;
+  font-family: inherit;
+}
+
+.film-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal, 1000);
+  display: grid;
+  place-items: center;
+  padding: var(--sp-5);
+  background: rgba(0, 0, 0, 0.72);
+}
+
+.film {
+  width: min(920px, 100%);
+  background: var(--c-surface);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+}
+
+.film__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  padding: var(--sp-4) var(--sp-5);
+}
+
+.film__title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: calc(var(--fs-base) * var(--font-scale));
+  font-weight: 700;
+  color: var(--c-ink-strong);
+}
+
+.film__close {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-sm);
+  background: var(--c-surface);
+  color: var(--c-ink);
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--c-primary);
+    color: var(--c-primary-dark);
+  }
+}
+
+.film__frame {
+  aspect-ratio: 16 / 9;
+  background: #000;
+
+  iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+  }
+}

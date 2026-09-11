@@ -1,0 +1,105 @@
+<div class="admin" [class.sidebar-open]="sidebarOpen()">
+  <!-- ------------------------------------------------------------ sidebar -->
+  <aside class="admin-sidebar" aria-label="Admin navigation">
+    <a routerLink="/admin" class="admin-brand">
+      <!-- The same mark and name the public site uses, read from site settings. -->
+      <img
+        class="admin-brand__logo"
+        [src]="settings()['site.logoUrl'] || '/assets/images/brand/lean-logo.png'"
+        [alt]="settings()['site.name'] || 'MSME Competitive (LEAN) Scheme'"
+        width="214"
+        height="76"
+      />
+    </a>
+
+    <nav class="admin-nav">
+      @for (group of navigation(); track group.label) {
+        <div class="admin-nav__group">
+          <p class="admin-nav__label">{{ group.label }}</p>
+          <ul>
+            @for (item of group.items; track item.path) {
+              <li>
+                <a
+                  [routerLink]="item.path"
+                  routerLinkActive="is-active"
+                  [routerLinkActiveOptions]="{ exact: item.path === '/admin' }"
+                  (click)="closeSidebar()"
+                >
+                  <app-icon [name]="item.icon" [size]="18" />
+                  <span>{{ item.label }}</span>
+                </a>
+              </li>
+            }
+          </ul>
+        </div>
+      }
+    </nav>
+
+    <a routerLink="/" target="_blank" rel="noopener" class="admin-sidebar__site">
+      <app-icon name="external-link" [size]="16" />
+      View the public site
+    </a>
+  </aside>
+
+  <!-- --------------------------------------------------------------- main -->
+  <div class="admin-main">
+    <header class="admin-topbar">
+      <button
+        type="button"
+        class="admin-topbar__toggle"
+        (click)="toggleSidebar()"
+        [attr.aria-expanded]="sidebarOpen()"
+        aria-label="Toggle navigation"
+      >
+        <app-icon [name]="sidebarOpen() ? 'close' : 'menu'" [size]="22" />
+      </button>
+
+      <div class="admin-topbar__spacer"></div>
+
+      <div class="admin-user">
+        <button
+          type="button"
+          class="admin-user__trigger"
+          (click)="userMenuOpen.set(!userMenuOpen())"
+          [attr.aria-expanded]="userMenuOpen()"
+          aria-haspopup="menu"
+        >
+          <span class="admin-user__avatar" aria-hidden="true">{{ initials() }}</span>
+          <span class="admin-user__meta">
+            <strong>{{ auth.user()?.fullName }}</strong>
+            <small>{{ auth.user()?.roles?.join(', ') }}</small>
+          </span>
+          <app-icon name="chevron-down" [size]="16" />
+        </button>
+
+        @if (userMenuOpen()) {
+          <div class="admin-user__menu" role="menu">
+            <p class="admin-user__email">{{ auth.user()?.email }}</p>
+            <a routerLink="/admin/account/password" role="menuitem" (click)="userMenuOpen.set(false)">
+              <app-icon name="shield" [size]="16" />
+              Change password
+            </a>
+            <button type="button" role="menuitem" (click)="logout()">
+              <app-icon name="log-out" [size]="16" />
+              Sign out
+            </button>
+          </div>
+        }
+      </div>
+    </header>
+
+    <main class="admin-content" id="main-content" tabindex="-1">
+      <router-outlet />
+    </main>
+  </div>
+
+  @if (sidebarOpen()) {
+    <button
+      type="button"
+      class="admin-scrim"
+      (click)="closeSidebar()"
+      aria-label="Close navigation"
+      tabindex="-1"
+    ></button>
+  }
+</div>

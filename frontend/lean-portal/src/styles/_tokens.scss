@@ -1,0 +1,230 @@
+// =============================================================================
+//  Design tokens
+//
+//  Layout comes from the two approved reference designs - the egovenz "home-3"
+//  band structure for the landing page, and the finance-press service page for
+//  internal pages. Typography follows the SAMAR government portal - Inter
+//  throughout. The palette is the "Petrol & Graphite" scheme chosen from the
+//  full-page comparisons in docs/palette-previews: a petrol teal accent on
+//  neutral graphite.
+//
+//  Everything downstream reads these custom properties, so a rebrand is a
+//  single-file change.
+// =============================================================================
+
+:root {
+  // ---------------------------------------------------------------- brand ----
+  // Petrol teal over neutral graphite. The shade is measured, not eyeballed:
+  // #0f7989 reaches 5.10:1 against white, so white text on a primary-filled
+  // button or the utility bar clears WCAG AA at body size with room to spare.
+  //
+  // A cool accent is what makes this scheme work. Any hue has to be darkened
+  // until it clears 4.5:1 on white, and warm hues have much further to fall -
+  // orange only passes at 39% lightness and amber at 34%, which is where they
+  // stop reading as orange and start reading as brown. Teal passes at 30% and
+  // still looks like teal. The earlier warm schemes were rejected for exactly
+  // that reason.
+  --c-primary: #0f7989;
+  --c-primary-hover: #0d6774;
+  --c-primary-dark: #0b5560;
+  /// Decorative only - does not meet AA for body text on white.
+  --c-primary-light: #1faabf;
+  --c-primary-soft: #f0fbfc;
+  --c-primary-rgb: 15, 121, 137;
+
+  /// Accents on the dark graphite bands. The base teal is too close in luminance
+  /// to --c-navy to be legible there, so dark grounds use these instead. Both
+  /// are measured against --c-navy, the lighter of the two dark grounds they
+  /// appear on, so they hold on the deeper strip as well:
+  ///   -on-dark       display sizes only (hero headline, counters) - 3.0:1
+  ///   -on-dark-text  body and small text on dark - 4.5:1, meets AA at any size
+  --c-primary-on-dark: #1c8695;
+  --c-primary-on-dark-text: #23a7ba;
+
+  // Named --c-navy for continuity with the rest of the codebase; under this
+  // scheme it is a neutral graphite rather than a blue.
+  --c-navy: #25333f;
+  --c-navy-deep: #1c2832;
+  --c-navy-soft: #3a4c5c;
+  --c-navy-rgb: 37, 51, 63;
+
+  // Accent used across internal pages, sidebars and breadcrumbs.
+  --c-slate: #3f5261;
+  --c-slate-hover: #1c2832;
+  --c-slate-soft: #eef2f5;
+
+  // ------------------------------------------------------------- neutrals ----
+  --c-ink: #4b5563;
+  --c-ink-strong: #2a3242;
+  // Darkened from #77818f: at 3.95:1 on white it failed AA for body text, and
+  // it is used at body size on card meta lines and descriptions throughout.
+  --c-ink-muted: #666f7c;
+  --c-ink-subtle: #a3adbb;
+
+  --c-surface: #ffffff;
+  --c-surface-alt: #fafbfd;
+  --c-surface-tint: #f4f7fb;
+  // The one light band that alternates with white down a public page. Sections had
+  // been picking between two greys six units apart, which read as a mistake rather
+  // than a rhythm, so every band now comes from here.
+  --c-band: #f4f7fb;
+  --c-surface-sunken: #eef2f7;
+
+  --c-border: #e8ecf2;
+  --c-border-strong: #d4dae3;
+
+  // ---------------------------------------------------------------- state ----
+  --c-success: #0f7a3d;
+  --c-success-soft: #e8f5ed;
+  --c-warning: #b45309;
+  --c-warning-soft: #fdf3e7;
+  --c-danger: #b3261e;
+  --c-danger-hover: #8f1e18;
+  --c-danger-soft: #fdecea;
+  --c-info: #1d5b9e;
+  --c-info-soft: #e9f2fb;
+
+  // ------------------------------------------------------- file type chips ----
+  // The conventional hue per format - red for PDF, blue for Word, green for
+  // Excel, orange for PowerPoint - held to the same muted band as the rest of
+  // the palette so a list of downloads does not turn into a row of stoplights.
+  // Each carries white uppercase text at 12px, so 4.5:1 is the floor; these sit
+  // at 5.0:1.
+  --c-file-pdf: #cb3a30;
+  --c-file-doc: #3670bb;
+  --c-file-xls: #1e7e5b;
+  --c-file-ppt: #aa592b;
+
+  // ----------------------------------------------------------- typography ----
+  // One family across the interface, matching the reference government portal:
+  // Inter for Latin, Noto Sans Devanagari for the Hindi in the identity strip
+  // and for anything Bhashini renders in an Indic script. Keeping display and
+  // body on the same family is deliberate - it replaces the earlier serif so the
+  // portal reads as one system rather than two.
+  --font-heading: 'Inter', 'Noto Sans Devanagari', 'Segoe UI', system-ui, -apple-system,
+    'Helvetica Neue', Arial, sans-serif;
+  --font-body: 'Inter', 'Noto Sans Devanagari', 'Segoe UI', system-ui, -apple-system,
+    'Helvetica Neue', Arial, sans-serif;
+  --font-display: 'Inter', 'Noto Sans Devanagari', 'Segoe UI', system-ui, -apple-system,
+    'Helvetica Neue', Arial, sans-serif;
+
+  /// Headings are set heavy with tight tracking, as on the reference portal.
+  --heading-weight: 800;
+  --heading-tracking: -0.022em;
+
+  --fs-xs: 0.75rem;     // 12
+  --fs-sm: 0.8125rem;   // 13
+  --fs-base: 0.9375rem; // 15
+  --fs-md: 1rem;        // 16
+  --fs-lg: 1.125rem;    // 18
+  --fs-xl: 1.375rem;    // 22
+  --fs-2xl: 1.75rem;    // 28
+  --fs-3xl: 2.125rem;   // 34
+  --fs-4xl: 2.75rem;    // 44
+  --fs-5xl: 3.375rem;   // 54
+
+  --lh-tight: 1.15;
+  --lh-snug: 1.35;
+  --lh-normal: 1.6;
+  --lh-relaxed: 1.75;
+
+  // Type scale, driven by the accessibility toolkit.
+  --font-scale: 1;
+
+  // --------------------------------------------------------------- layout ----
+  --container: 1200px;
+  --container-narrow: 920px;
+  /// The masthead carries two lockups, seven menu items and the reader
+  /// utilities, so it is given more room than the content column.
+  // Wider than the content container: the masthead has to hold two lockups, a
+  // seven-item menu and three controls on one line, and at 1440 that came to
+  // exactly 1440 - no slack, so any variation in font metrics overlapped.
+  --container-header: 1660px;
+  --gutter: 1.5rem;
+
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.5rem;
+  --sp-6: 2rem;
+  --sp-7: 2.5rem;
+  --sp-8: 3rem;
+  --sp-9: 4rem;
+  --sp-10: 5rem;
+  --sp-11: 6rem;
+
+  --section-y: 4.5rem;
+  --section-y-sm: 3rem;
+
+  // --------------------------------------------------------------- shapes ----
+  --radius-xs: 3px;
+  --radius-sm: 5px;
+  --radius: 8px;
+  --radius-lg: 14px;
+  --radius-pill: 999px;
+
+  --shadow-xs: 0 1px 2px rgba(16, 31, 64, 0.06);
+  --shadow-sm: 0 2px 8px rgba(16, 31, 64, 0.07);
+  --shadow: 0 6px 22px rgba(16, 31, 64, 0.09);
+  --shadow-lg: 0 18px 48px rgba(16, 31, 64, 0.14);
+  --shadow-primary: 0 10px 28px rgba(var(--c-primary-rgb), 0.28);
+
+  // ---------------------------------------------------------------- misc ----
+  --header-height: 84px;
+  --transition: 180ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 320ms cubic-bezier(0.4, 0, 0.2, 1);
+  --focus-ring: 0 0 0 3px rgba(var(--c-primary-rgb), 0.35);
+
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-header: 300;
+  --z-overlay: 400;
+  --z-modal: 500;
+  --z-toast: 600;
+}
+
+// -----------------------------------------------------------------------------
+//  High-contrast theme, toggled from the accessibility toolkit.
+//  Required for GIGW conformance.
+// -----------------------------------------------------------------------------
+:root[data-contrast='high'] {
+  --c-primary: #ffdd00;
+  --c-primary-hover: #ffe94d;
+  --c-primary-soft: #1a1a1a;
+  --c-primary-rgb: 255, 221, 0;
+
+  --c-navy: #000000;
+  --c-navy-deep: #000000;
+  --c-navy-soft: #1a1a1a;
+  --c-slate: #000000;
+  --c-slate-soft: #1a1a1a;
+
+  --c-ink: #ffffff;
+  --c-ink-strong: #ffffff;
+  --c-ink-muted: #e6e6e6;
+  --c-ink-subtle: #cccccc;
+
+  --c-surface: #000000;
+  --c-surface-alt: #0d0d0d;
+  --c-surface-tint: #131313;
+  --c-band: #131313;
+  --c-surface-sunken: #1a1a1a;
+
+  --c-border: #666666;
+  --c-border-strong: #999999;
+
+  --shadow-xs: none;
+  --shadow-sm: none;
+  --shadow: none;
+  --shadow-lg: none;
+  --shadow-primary: none;
+}
+
+// Respect the reader's motion preference.
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transition: 0ms;
+    --transition-slow: 0ms;
+  }
+}

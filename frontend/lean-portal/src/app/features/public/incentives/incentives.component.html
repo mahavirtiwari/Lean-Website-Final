@@ -1,0 +1,253 @@
+@if (page(); as p) {
+  <app-page-banner
+    [title]="p.title"
+    [subtitle]="p.summary"
+    [eyebrow]="p.bannerCaption || 'Benefits and incentives'"
+    [imageUrl]="p.bannerImageUrl"
+    [breadcrumbs]="p.breadcrumbs"
+  />
+} @else {
+  <app-page-banner
+    [title]="heading()"
+    eyebrow="Benefits and incentives"
+    [breadcrumbs]="[
+      { label: 'Home', url: '/' },
+      { label: 'Benefits / Incentives', url: '/benefits-incentives' },
+      { label: heading() },
+    ]"
+  />
+}
+
+<div class="section section--alt">
+  <div class="container">
+    <!-- The wording already written for this category, kept above the list. -->
+    @if (page()?.body; as intro) {
+      <div class="incentive-intro prose" appProseHeadings [innerHTML]="intro | safeHtml"></div>
+    }
+
+    <!-- ----------------------------------------------------------- filters -->
+    @if (levels().length || showStateFilter) {
+      <form class="incentive-filters" (submit)="$event.preventDefault()">
+        @if (levels().length) {
+          <div class="incentive-filters__field">
+            <label class="field__label" for="incentive-level">Scheme level</label>
+            <select
+              id="incentive-level"
+              class="input"
+              [ngModel]="level()"
+              (ngModelChange)="onLevel($event)"
+              name="level"
+            >
+              <option value="">All levels</option>
+              @for (option of levels(); track option) {
+                <option [value]="option">{{ option }}</option>
+              }
+            </select>
+          </div>
+        }
+
+        @if (showStateFilter) {
+          <div class="incentive-filters__field">
+            <label class="field__label" for="incentive-state">State / UT</label>
+            <select
+              id="incentive-state"
+              class="input"
+              [ngModel]="state()"
+              (ngModelChange)="onState($event)"
+              name="state"
+            >
+              <option value="">All states and union territories</option>
+              @for (option of states(); track option) {
+                <option [value]="option">{{ option }}</option>
+              }
+            </select>
+          </div>
+        }
+
+        @if (filtered()) {
+          <button type="button" class="btn btn--outline btn--sm" (click)="clearFilters()">
+            Clear filters
+          </button>
+        }
+      </form>
+    }
+
+    <!-- ------------------------------------------------------------- list -->
+    @if (loading()) {
+      <app-loading-panel message="Loading incentives…" />
+    } @else if (incentives().length) {
+      <p class="incentive-count" aria-live="polite">
+        Showing {{ incentives().length }} of {{ data()?.totalCount }}
+        {{ data()?.totalCount === 1 ? 'incentive' : 'incentives' }}
+      </p>
+
+      <ol class="incentives">
+        @for (item of incentives(); track item.id; let i = $index) {
+          <li class="incentive">
+            @if (item.issuerName) {
+              <p class="incentive__issuer">
+                @if (item.issuerLogoUrl) {
+                  <img [src]="item.issuerLogoUrl" alt="" loading="lazy" />
+                } @else {
+                  <app-icon name="building" [size]="16" />
+                }
+                {{ item.issuerName }}
+              </p>
+            }
+
+            <div class="incentive__headline">
+              <h2 class="incentive__title">
+                <span class="incentive__number" aria-hidden="true">{{ i + 1 }}.</span>
+                {{ item.title }}
+              </h2>
+
+              @if (item.level || item.state) {
+                <p class="incentive__tags">
+                  @if (item.level) {
+                    <span class="tag">{{ item.level }}</span>
+                  }
+                  @if (item.state) {
+                    <span class="tag tag--state">{{ item.state }}</span>
+                  }
+                </p>
+              }
+            </div>
+
+            @if (item.description) {
+              <div class="incentive__body prose" [appProseHeadings]="3" [innerHTML]="item.description | safeHtml"></div>
+            }
+
+
+            @if (
+              item.contactName ||
+              item.contactEmail ||
+              item.contactPhone ||
+              item.document1Url ||
+              item.document2Url ||
+              item.videoUrl ||
+              item.availUrl
+            ) {
+              <div class="incentive__foot">
+                @if (item.contactName || item.contactEmail || item.contactPhone) {
+                  <ul class="incentive__contact">
+                    @if (item.contactName) {
+                      <li>
+                        <app-icon name="user" [size]="15" />
+                        <span>{{ item.contactName }}</span>
+                      </li>
+                    }
+                    @if (item.contactEmail) {
+                      <li>
+                        <app-icon name="mail" [size]="15" />
+                        <a [href]="'mailto:' + item.contactEmail">{{ item.contactEmail }}</a>
+                      </li>
+                    }
+                    @if (item.contactPhone) {
+                      <li>
+                        <app-icon name="phone" [size]="15" />
+                        <a [href]="tel(item.contactPhone)">{{ item.contactPhone }}</a>
+                      </li>
+                    }
+                  </ul>
+                }
+
+                @if (item.document1Url || item.document2Url || item.videoUrl || item.availUrl) {
+                  <div class="incentive__actions">
+                @if (item.videoUrl) {
+                  <button type="button" class="incentive__doc incentive__film" (click)="openFilm(item)">
+                    <app-icon name="play-circle" [size]="15" />
+                    Watch film
+                  </button>
+                }
+
+                @if (item.document1Url) {
+                  <a class="incentive__doc" [href]="item.document1Url" target="_blank" rel="noopener noreferrer">
+                    <app-icon name="file-text" [size]="15" />
+                    {{ item.document1Label || 'Document 1' }}
+                    <span class="sr-only">, opens in a new tab</span>
+                  </a>
+                }
+                @if (item.document2Url) {
+                  <a class="incentive__doc" [href]="item.document2Url" target="_blank" rel="noopener noreferrer">
+                    <app-icon name="file-text" [size]="15" />
+                    {{ item.document2Label || 'Document 2' }}
+                    <span class="sr-only">, opens in a new tab</span>
+                  </a>
+                }
+
+                @if (item.availUrl) {
+                  <a class="btn btn--primary btn--sm incentive__avail" [routerLink]="item.availUrl">
+                    {{ item.availLabel || 'Avail' }}
+                    <span class="sr-only"> {{ item.title }}</span>
+                  </a>
+                }
+                  </div>
+                }
+              </div>
+            }
+          </li>
+        }
+      </ol>
+    } @else if (filtered()) {
+      <app-empty-state
+        icon="filter"
+        heading="Nothing matches those filters"
+        message="No incentive in this category matches the level or state you chose."
+      />
+      <p class="incentive-reset">
+        <button type="button" class="btn btn--outline btn--sm" (click)="clearFilters()">
+          Clear filters
+        </button>
+      </p>
+    } @else {
+      <!--
+        Said plainly rather than left as an empty page. These entries are matters of
+        fact - a state's notification, a bank's concession, the officer to ask - and
+        the honest thing where none has been published is to say so and point at the
+        people who would know.
+      -->
+      <app-empty-state
+        icon="info"
+        heading="No incentives have been published in this category yet"
+        message="As incentives in this category are notified they will be listed here, with the body offering each one and who to contact about it."
+      />
+      <p class="incentive-reset">
+        <a class="btn btn--outline btn--sm" routerLink="/contact-us">Ask the scheme team</a>
+      </p>
+    }
+  </div>
+</div>
+
+<!--
+  The film opens here rather than sitting in the entry. Three reasons: a 16:9
+  frame in every card buries the wording it belongs to, nothing is requested from
+  YouTube until somebody asks for it, and the entry stays scannable.
+-->
+@if (playing(); as film) {
+  <div class="film-scrim" (click)="closeFilm()">
+    <div
+      class="film"
+      role="dialog"
+      aria-modal="true"
+      [attr.aria-label]="film.title"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="film__head">
+        <h2 class="film__title">{{ film.title }}</h2>
+        <button type="button" class="film__close" (click)="closeFilm()" aria-label="Close the film">
+          <app-icon name="close" [size]="18" />
+        </button>
+      </div>
+
+      <div class="film__frame">
+        <iframe
+          [src]="film.videoUrl | safeEmbed"
+          [title]="film.title"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; picture-in-picture"
+          referrerpolicy="strict-origin-when-cross-origin"
+          allowfullscreen
+        ></iframe>
+      </div>
+    </div>
+  </div>
+}

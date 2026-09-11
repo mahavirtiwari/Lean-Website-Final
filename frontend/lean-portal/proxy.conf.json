@@ -1,0 +1,14 @@
+{
+  "//": "Development only. Uploaded files are served by the API, but the public site and the CMS reference them by a root-relative path such as /uploads/banners/x.jpg. In production the two are one origin (IIS serves the site and the API as a sub-application), so the path resolves. Under `ng serve` they are two ports, and without this every uploaded image renders broken in the CMS and on the site.",
+  "/uploads": {
+    "target": "http://localhost:5199",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/api/site/theme.css": {
+    "target": "http://localhost:5199",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "//theme": "The colour theme's stylesheet is linked from index.html by a root-relative /api address, which in production is the same origin; under ng serve it has to be passed through to the API."
+}

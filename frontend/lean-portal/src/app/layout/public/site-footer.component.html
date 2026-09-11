@@ -1,0 +1,175 @@
+<footer class="site-footer">
+  <div class="container site-footer__main">
+    <!-- ------------------------------------------------------ about column -->
+    <div class="footer-col footer-col--about">
+      <!-- A reversed (light) logo: the dark ink of the standard mark is invisible
+           on this band. Both footer logos are set under Branding in the console. -->
+      <div class="footer-brands">
+        @for (logo of footerLogos(); track logo.src) {
+          @if (logo.href && logo.external) {
+            <a class="footer-brand" [href]="logo.href" target="_blank" rel="noopener noreferrer"
+               [attr.aria-label]="logo.alt + ' (opens in a new tab)'">
+              <img class="footer-brand__ministry" [src]="logo.src" [alt]="logo.alt" width="569" height="177" />
+            </a>
+          } @else if (logo.href) {
+            <a class="footer-brand" [routerLink]="logo.href" [attr.aria-label]="logo.alt">
+              <img class="footer-brand__ministry" [src]="logo.src" [alt]="logo.alt" width="569" height="177" />
+            </a>
+          } @else {
+            <span class="footer-brand">
+              <img class="footer-brand__ministry" [src]="logo.src" [alt]="logo.alt" width="569" height="177" />
+            </span>
+          }
+        }
+      </div>
+
+      <address class="footer-address">
+        <p>{{ settings()['contact.addressLine1'] }}</p>
+        <p>{{ settings()['contact.addressLine2'] }}</p>
+        <p>
+          {{ settings()['contact.city'] }} - {{ settings()['contact.pincode'] }},
+          {{ settings()['contact.country'] }}
+        </p>
+      </address>
+
+      <ul class="footer-contact">
+        @if (settings()['contact.helpline']; as helpline) {
+          <li>
+            <app-icon name="phone" [size]="16" />
+            <a [href]="'tel:' + helpline">{{ helpline }}</a>
+          </li>
+        }
+        @if (settings()['contact.email']; as mail) {
+          <li>
+            <app-icon name="mail" [size]="16" />
+            <a [href]="'mailto:' + mail">{{ mail }}</a>
+          </li>
+        }
+        @if (settings()['contact.workingHours']; as hours) {
+          <li>
+            <app-icon name="clock" [size]="16" />
+            <span>{{ hours }}</span>
+          </li>
+        }
+      </ul>
+
+      @if (socials().length) {
+        <div class="footer-social">
+          @for (social of socials(); track social.key) {
+            <a
+              [href]="social.url"
+              target="_blank"
+              rel="noopener noreferrer"
+              [attr.aria-label]="social.label"
+              [title]="social.label"
+            >
+              <app-icon [name]="social.icon" [size]="17" />
+            </a>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- ------------------------------------------------------- quick links -->
+    <nav class="footer-col" aria-labelledby="footer-quick-links">
+      <h2 class="footer-col__title" id="footer-quick-links">
+        {{ settings()['footer.quickLinksTitle'] || 'Quick Links' }}
+      </h2>
+      <ul class="footer-list">
+        @for (item of quickLinks(); track item.id) {
+          <li>
+            <a [routerLink]="href(item)">{{ item.label }}</a>
+          </li>
+        }
+      </ul>
+    </nav>
+
+    <!-- --------------------------------------------------- website policies -->
+    <!-- These are statutory under GIGW, so they keep a column of their own rather
+         than a crowded strip along the bottom of the page. -->
+    <nav class="footer-col" aria-labelledby="footer-policies">
+      <h2 class="footer-col__title" id="footer-policies">
+        {{ settings()['footer.policiesTitle'] || 'Website Policies' }}
+      </h2>
+      <ul class="footer-list">
+        @for (item of footerLinks(); track item.id) {
+          <li>
+            <a [routerLink]="href(item)">{{ item.label }}</a>
+          </li>
+        }
+      </ul>
+    </nav>
+
+    <!-- ------------------------------------------------------ useful links -->
+    <nav class="footer-col" aria-labelledby="footer-useful-links">
+      <h2 class="footer-col__title" id="footer-useful-links">
+        {{ settings()['footer.usefulLinksTitle'] || 'Useful Links' }}
+      </h2>
+      <ul class="footer-list">
+        @for (item of usefulLinks(); track item.id) {
+          <li>
+            <a [href]="href(item)" target="_blank" rel="noopener noreferrer">
+              {{ item.label }}
+              <app-icon name="external-link" [size]="12" />
+            </a>
+          </li>
+        }
+      </ul>
+
+      <!-- Inside this column rather than a grid item of its own: as its own item
+           it was pushed onto a second row and left a band of empty footer. -->
+      @if (enabled('feature.visitorCount')) {
+        <div class="footer-visitors">
+          <app-visitor-count />
+        </div>
+      }
+    </nav>
+  </div>
+
+  <!-- ------------------------------------------------------------ bottom bar -->
+  <!-- One line, as the reference portal does. The policy links that used to crowd
+       this strip now have their own column above. -->
+  <div class="site-footer__bottom">
+    <div class="container site-footer__bottom-inner">
+      <!--
+        The ownership line GIGW asks every government site to carry. It comes from
+        footer.copyright so the ministry can word it themselves; the composed
+        copyright line is the fallback for an installation that has cleared it.
+      -->
+      <div class="footer-legal__start">
+        @if (settings()['footer.copyright']; as owned) {
+          <p class="footer-legal__line">{{ owned }}</p>
+        } @else {
+          <p class="footer-legal__line">
+            &copy; {{ year }} {{ settings()['site.ministry'] }},
+            {{ settings()['site.government'] || 'Government of India' }}
+          </p>
+        }
+
+        <!-- Sitemap, Screen Reader Access, Disclaimer: the links GIGW sites carry
+             along the bottom. Set under Navigation -> Footer bottom bar. -->
+        @if (bottomLinks().length) {
+          <nav aria-label="Site information">
+            <ul class="footer-bar-links">
+              @for (item of bottomLinks(); track item.id) {
+                <li>
+                  @if (item.openInNewTab || isExternal(item)) {
+                    <a [href]="href(item)" target="_blank" rel="noopener noreferrer">
+                      {{ item.label }}<span class="sr-only"> (opens in a new tab)</span>
+                    </a>
+                  } @else {
+                    <a [routerLink]="href(item)">{{ item.label }}</a>
+                  }
+                </li>
+              }
+            </ul>
+          </nav>
+        }
+      </div>
+
+      @if (settings()['footer.lastUpdated']; as updated) {
+        <p class="footer-legal__updated">Last updated: {{ updated }}</p>
+      }
+    </div>
+  </div>
+</footer>

@@ -1,0 +1,224 @@
+<div class="page-head">
+  <div>
+    <h1 class="page-head__title">{{ config().title }}</h1>
+    @if (config().lead) {
+      <p class="page-head__lead">{{ config().lead }}</p>
+    }
+  </div>
+
+  <div class="page-head__actions">
+    <button type="button" class="btn btn--primary btn--sm" (click)="startCreate()">
+      <app-icon name="plus" [size]="16" />
+      Add {{ config().singular }}
+    </button>
+  </div>
+</div>
+
+@if (config().note) {
+  <div class="admin-note mb-4">
+    <app-icon name="info" [size]="18" />
+    <span>{{ config().note }}</span>
+  </div>
+}
+
+<div class="admin-toolbar">
+  <div class="admin-search">
+    <app-icon name="search" [size]="18" />
+    <label class="sr-only" [attr.for]="'search-' + config().path">Search {{ config().title }}</label>
+    <input
+      [id]="'search-' + config().path"
+      type="search"
+      class="input"
+      [placeholder]="config().searchPlaceholder || 'Search…'"
+      [ngModel]="search()"
+      (ngModelChange)="onSearch($event)"
+    />
+  </div>
+
+  @if (result(); as page) {
+    <span class="text-small text-muted">{{ page.totalCount }} record(s)</span>
+  }
+</div>
+
+@if (loading()) {
+  <app-loading-panel />
+} @else if (result(); as page) {
+  @if (page.items.length) {
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <caption class="sr-only">{{ config().title }}</caption>
+        <thead>
+          <tr>
+            @if (config().sortable) {
+              <th scope="col" style="width: 78px">Order</th>
+            }
+            @for (column of config().columns; track column.header) {
+              <th scope="col" [style.width]="column.width || null">{{ column.header }}</th>
+            }
+            <th scope="col" style="width: 210px">Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          @for (row of page.items; track row.id) {
+            <tr>
+              @if (config().sortable) {
+                <td>
+                  <div class="order-buttons">
+                    <button
+                      type="button"
+                      class="icon-btn"
+                      (click)="move(row, -1)"
+                      [disabled]="$first"
+                      aria-label="Move up"
+                    >
+                      <app-icon name="chevron-up" [size]="14" />
+                    </button>
+                    <button
+                      type="button"
+                      class="icon-btn"
+                      (click)="move(row, 1)"
+                      [disabled]="$last"
+                      aria-label="Move down"
+                    >
+                      <app-icon name="chevron-down" [size]="14" />
+                    </button>
+                  </div>
+                </td>
+              }
+
+              @for (column of config().columns; track column.header) {
+                <td>
+                  @switch (column.kind) {
+                    @case ('image') {
+                      @if (cell(row, column.field)) {
+                        <!-- Not lazy: these are 78x52 and sit in the first
+                             screenful, and inside the table's scroll container
+                             Chrome never triggered the deferred load, so every
+                             thumbnail stayed blank. -->
+                        <img
+                          class="cell-thumb"
+                          [src]="cell(row, column.field)"
+                          [alt]="''"
+                          width="78"
+                          height="52"
+                        />
+                      } @else {
+                        <span class="text-muted">—</span>
+                      }
+                    }
+                    @case ('boolean') {
+                      @if (cell(row, column.field)) {
+                        <span class="status status--published">Yes</span>
+                      } @else {
+                        <span class="status status--archived">No</span>
+                      }
+                    }
+                    @case ('status') {
+                      <span class="status" [class]="statusClass(cell(row, column.field))">
+                        {{ cellText(row, column.field) | humanise }}
+                      </span>
+                    }
+                    @case ('badge') {
+                      @if (cell(row, column.field)) {
+                        <span class="badge">{{ cellText(row, column.field) | humanise }}</span>
+                      } @else {
+                        <span class="text-muted">—</span>
+                      }
+                    }
+                    @case ('date') {
+                      <span class="text-small">{{ cellDate(row, column.field) | govDate }}</span>
+                    }
+                    @case ('number') {
+                      <span class="numeric">{{ cell(row, column.field) }}</span>
+                    }
+                    @case ('colour') {
+                      <span class="swatch" [style.background]="cell(row, column.field) || '#ccc'"></span>
+                    }
+                    @default {
+                      <span class="cell-title">{{ cellText(row, column.field) | truncate: 70 }}</span>
+                      @if (column.subField && cell(row, column.subField)) {
+                        <span class="cell-sub">{{ cellText(row, column.subField) | truncate: 90 }}</span>
+                      }
+                    }
+                  }
+                </td>
+              }
+
+              <td>
+                <!-- Named buttons rather than bare icons: this console is used
+                     occasionally, and a row action should not need decoding. -->
+                <div class="cell-actions">
+                  <button type="button" class="btn btn--outline btn--xs" (click)="startEdit(row)">
+                    Edit
+                  </button>
+
+                  @if (canToggle()) {
+                    <button
+                      type="button"
+                      class="btn btn--xs"
+                      [class.btn--warning-soft]="isEnabled(row)"
+                      [class.btn--success-soft]="!isEnabled(row)"
+                      [disabled]="toggling() === row.id"
+                      (click)="toggleEnabled(row)"
+                    >
+                      {{ isEnabled(row) ? 'Disable' : 'Enable' }}
+                    </button>
+                  }
+
+                  @if (auth.canPublish) {
+                    <button
+                      type="button"
+                      class="btn btn--danger-soft btn--xs"
+                      (click)="confirmDelete(row)"
+                    >
+                      Remove
+                    </button>
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <app-pagination [result]="page" (pageChange)="goToPage($event)" />
+  } @else {
+    <app-empty-state
+      [heading]="'No ' + config().title.toLowerCase() + ' yet'"
+      [message]="search() ? 'No records match your search.' : 'Add the first record to get started.'"
+      [icon]="config().icon"
+    >
+      <button type="button" class="btn btn--primary btn--sm" (click)="startCreate()">
+        <app-icon name="plus" [size]="16" />
+        Add {{ config().singular }}
+      </button>
+    </app-empty-state>
+  }
+}
+
+<!-- ------------------------------------------------------------- form -->
+@if (editing(); as row) {
+  <app-resource-form
+    [fields]="config().fields"
+    [value]="row"
+    [title]="(isNew() ? 'Add ' : 'Edit ') + config().singular"
+    [saving]="saving()"
+    (save)="save($event)"
+    (cancel)="cancelEdit()"
+  />
+}
+
+<!-- ------------------------------------------------------ delete modal -->
+@if (deleting(); as row) {
+  <app-confirm-dialog
+    [title]="'Delete this ' + config().singular + '?'"
+    [message]="
+      'This removes it from the public site. The record is retained for audit but will no longer be visible.'
+    "
+    confirmLabel="Delete"
+    (confirm)="performDelete()"
+    (cancel)="deleting.set(null)"
+  />
+}

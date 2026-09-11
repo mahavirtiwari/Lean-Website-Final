@@ -1,0 +1,21 @@
+# MSME Competitive (LEAN) Scheme portal
+# Ministry of Micro, Small and Medium Enterprises, Government of India
+
+User-agent: *
+Allow: /
+
+# The admin console and the API surface hold nothing a search engine should
+# list, and indexing them only publishes the shape of the back office.
+Disallow: /admin
+Disallow: /api/
+# The one address under /api a crawler needs. Without it the sitemap below is
+# itself blocked, and Search Console reports "Sitemap blocked by robots.txt".
+# The longer rule wins, so this opens the sitemap and nothing else.
+Allow: /api/site/sitemap.xml
+Disallow: /uploads/
+Disallow: /swagger
+
+# Generated from the published pages and notices, so it is never out of date.
+# The /api prefix is deliberate: the API is a child application there, and the
+# site root rewrites unknown paths to the Angular entry document.
+Sitemap: https://leannew.qci.org.in/api/site/sitemap.xml

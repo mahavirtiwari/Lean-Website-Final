@@ -1,0 +1,227 @@
+.hero {
+  position: relative;
+  display: grid;
+  align-items: center;
+  min-height: clamp(460px, 62vh, 620px);
+  padding-block: var(--sp-10) var(--sp-11);
+  background: var(--c-navy);
+  color: #fff;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+// ------------------------------------------------------------------ media ----
+
+.hero__media {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+}
+
+.hero__image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center right;
+  opacity: 0;
+  transform: scale(1.06);
+  transition:
+    opacity 900ms ease,
+    transform 7s linear;
+
+  &.is-active {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.hero__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(
+      100deg,
+      rgba(var(--c-navy-rgb), 0.92) 0%,
+      rgba(var(--c-navy-rgb), 0.8) 42%,
+      rgba(var(--c-navy-rgb), 0.42) 72%,
+      rgba(var(--c-navy-rgb), 0.2) 100%
+    );
+}
+
+// ---------------------------------------------------------------- content ----
+
+.hero__inner {
+  position: relative;
+  z-index: 1;
+}
+
+.hero__content {
+  max-width: 640px;
+  animation: hero-in 520ms ease-out;
+}
+
+.hero__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-4);
+  padding: 0.3rem 0.85rem;
+  font-family: var(--font-heading);
+  font-size: calc(var(--fs-sm) * var(--font-scale));
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #fff;
+  background: rgba(var(--c-primary-rgb), 0.92);
+  border-radius: var(--radius-pill);
+}
+
+.hero__title {
+  display: flex;
+  flex-direction: column;
+  font-size: calc(var(--fs-5xl) * var(--font-scale));
+  font-weight: 800;
+  line-height: 1.08;
+  color: #fff;
+  margin-bottom: var(--sp-5);
+}
+
+.hero__title-accent {
+  color: var(--c-primary-on-dark);
+
+  // Keep the accent legible when the high-contrast theme inverts the palette.
+  :root[data-contrast='high'] & {
+    color: var(--c-primary);
+  }
+}
+
+.hero__lead {
+  max-width: 560px;
+  margin-bottom: var(--sp-7);
+  font-size: calc(var(--fs-lg) * var(--font-scale));
+  line-height: var(--lh-relaxed);
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+}
+
+// --------------------------------------------------------------- controls ----
+
+.hero__controls {
+  position: absolute;
+  left: 50%;
+  bottom: var(--sp-7);
+  transform: translateX(-50%);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  width: 100%;
+  justify-content: flex-start;
+}
+
+.hero__arrow {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  transition:
+    background-color var(--transition),
+    border-color var(--transition);
+
+  &:hover {
+    background: var(--c-primary);
+    border-color: var(--c-primary);
+  }
+}
+
+.hero__dots {
+  display: flex;
+  gap: var(--sp-2);
+}
+
+.hero__dot {
+  width: 10px;
+  height: 10px;
+  padding: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+  transition:
+    background-color var(--transition),
+    width var(--transition);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.7);
+  }
+
+  &.is-active {
+    width: 30px;
+    border-radius: var(--radius-pill);
+    background: var(--c-primary-on-dark);
+  }
+}
+
+@keyframes hero-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero__content {
+    animation: none;
+  }
+
+  .hero__image {
+    transition: opacity 1ms;
+    transform: none;
+  }
+}
+
+// ------------------------------------------------------------- responsive ----
+
+@media (max-width: 900px) {
+  .hero {
+    min-height: 0;
+    padding-block: var(--sp-8) var(--sp-10);
+    text-align: left;
+  }
+
+  .hero__title {
+    font-size: calc(var(--fs-4xl) * var(--font-scale));
+  }
+
+  .hero__scrim {
+    background: linear-gradient(
+      180deg,
+      rgba(var(--c-navy-rgb), 0.9) 0%,
+      rgba(var(--c-navy-rgb), 0.82) 100%
+    );
+  }
+}
+
+@media (max-width: 560px) {
+  .hero__title {
+    font-size: calc(var(--fs-3xl) * var(--font-scale));
+  }
+
+  .hero__actions .btn {
+    width: 100%;
+  }
+
+  .hero__controls {
+    bottom: var(--sp-5);
+  }
+}

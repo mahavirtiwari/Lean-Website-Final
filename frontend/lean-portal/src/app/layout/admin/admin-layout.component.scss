@@ -1,0 +1,294 @@
+.admin {
+  display: grid;
+  grid-template-columns: 264px minmax(0, 1fr);
+  min-height: 100vh;
+  background: var(--c-surface-alt);
+}
+
+// --------------------------------------------------------------- sidebar ----
+
+// A light rail rather than a dark one: the console spends its day next to white
+// editing surfaces, and a slab of graphite down one side fights them. The tint
+// and the hairline are enough to separate it from the content area.
+.admin-sidebar {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--c-surface-tint);
+  color: var(--c-ink);
+  border-right: 1px solid var(--c-border);
+  overflow-y: auto;
+}
+
+.admin-brand {
+  display: flex;
+  padding: var(--sp-5);
+  border-bottom: 1px solid var(--c-border);
+
+  &:hover {
+    text-decoration: none;
+  }
+}
+
+// The mark is drawn for a light ground, so on a light rail it needs no plate.
+// The rail is 264px wide less 24px of padding either side, so at this height the
+// mark still clears the edges by a comfortable margin.
+.admin-brand__logo {
+  width: auto;
+  height: 68px;
+}
+
+.admin-nav {
+  flex: 1;
+  padding: var(--sp-4) var(--sp-3);
+}
+
+.admin-nav__group + .admin-nav__group {
+  margin-top: var(--sp-5);
+}
+
+.admin-nav__label {
+  padding: 0 var(--sp-3) var(--sp-2);
+  font-size: calc(var(--fs-xs) * var(--font-scale));
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--c-ink-muted);
+}
+
+.admin-nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.admin-nav a {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: 0.6rem 0.85rem;
+  margin-bottom: 2px;
+  border-radius: var(--radius-sm);
+  font-size: calc(var(--fs-base) * var(--font-scale));
+  font-weight: 500;
+  color: var(--c-ink-strong);
+  border-left: 3px solid transparent;
+  transition:
+    background-color var(--transition),
+    color var(--transition),
+    border-color var(--transition);
+
+  &:hover {
+    background: var(--c-primary-soft);
+    color: var(--c-primary);
+    text-decoration: none;
+  }
+
+  &.is-active {
+    background: var(--c-primary);
+    border-left-color: var(--c-primary-dark);
+    color: #fff;
+    font-weight: 600;
+  }
+}
+
+.admin-sidebar__site {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-4) var(--sp-5);
+  border-top: 1px solid var(--c-border);
+  font-size: calc(var(--fs-sm) * var(--font-scale));
+  color: var(--c-ink-muted);
+
+  &:hover {
+    color: var(--c-primary);
+    text-decoration: none;
+  }
+}
+
+// ------------------------------------------------------------------ main ----
+
+.admin-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.admin-topbar {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  min-height: 64px;
+  padding-inline: var(--sp-5);
+  background: var(--c-surface);
+  border-bottom: 1px solid var(--c-border);
+}
+
+.admin-topbar__toggle {
+  display: none;
+  padding: var(--sp-2);
+  color: var(--c-navy);
+  border-radius: var(--radius-sm);
+
+  &:hover {
+    background: var(--c-surface-tint);
+  }
+}
+
+.admin-topbar__spacer {
+  flex: 1;
+}
+
+// ------------------------------------------------------------ user menu ----
+
+.admin-user {
+  position: relative;
+}
+
+.admin-user__trigger {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--radius-sm);
+  color: var(--c-ink-strong);
+  transition: background-color var(--transition);
+
+  &:hover {
+    background: var(--c-surface-tint);
+  }
+}
+
+.admin-user__avatar {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--c-primary);
+  color: #fff;
+  font-family: var(--font-heading);
+  font-size: calc(var(--fs-sm) * var(--font-scale));
+  font-weight: 700;
+}
+
+.admin-user__meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.25;
+
+  strong {
+    font-family: var(--font-heading);
+    font-size: calc(var(--fs-base) * var(--font-scale));
+  }
+
+  small {
+    font-size: calc(var(--fs-xs) * var(--font-scale));
+    color: var(--c-ink-muted);
+  }
+}
+
+.admin-user__menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: var(--z-dropdown);
+  min-width: 230px;
+  padding: var(--sp-2);
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+
+  a,
+  button {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    width: 100%;
+    padding: 0.55rem 0.7rem;
+    border-radius: var(--radius-sm);
+    font-size: calc(var(--fs-base) * var(--font-scale));
+    color: var(--c-ink-strong);
+    text-align: left;
+
+    &:hover {
+      background: var(--c-surface-tint);
+      color: var(--c-primary);
+      text-decoration: none;
+    }
+  }
+}
+
+.admin-user__email {
+  padding: 0.4rem 0.7rem var(--sp-2);
+  margin-bottom: var(--sp-2);
+  border-bottom: 1px solid var(--c-border);
+  font-size: calc(var(--fs-sm) * var(--font-scale));
+  color: var(--c-ink-muted);
+  word-break: break-all;
+}
+
+// --------------------------------------------------------------- content ----
+
+.admin-content {
+  flex: 1;
+  padding: var(--sp-6);
+  outline: none;
+
+  @media (max-width: 640px) {
+    padding: var(--sp-4);
+  }
+}
+
+.admin-scrim {
+  display: none;
+}
+
+// ------------------------------------------------------------ responsive ----
+
+@media (max-width: 1024px) {
+  .admin {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .admin-sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: var(--z-overlay);
+    width: 264px;
+    transform: translateX(-100%);
+    transition: transform var(--transition-slow);
+  }
+
+  .admin.sidebar-open .admin-sidebar {
+    transform: translateX(0);
+  }
+
+  .admin-topbar__toggle {
+    display: grid;
+    place-items: center;
+  }
+
+  .admin.sidebar-open .admin-scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: calc(var(--z-overlay) - 1);
+    background: rgba(var(--c-navy-rgb), 0.5);
+    border: 0;
+  }
+}
+
+@media (max-width: 560px) {
+  .admin-user__meta {
+    display: none;
+  }
+}

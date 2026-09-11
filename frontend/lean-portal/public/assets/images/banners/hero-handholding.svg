@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 720" role="img" aria-label="Consultant handholding on site">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#33507e"/><stop offset="1" stop-color="#9c2c23"/>
+    </linearGradient>
+    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+      <path d="M48 0H0V48" fill="none" stroke="#ffffff" stroke-opacity=".07" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="1440" height="720" fill="url(#bg)"/>
+  <rect width="1440" height="720" fill="url(#grid)"/>
+  
+  <g stroke="#ffffff" stroke-opacity=".22" stroke-width="4" fill="none" stroke-linecap="round">
+    <path d="M790 470c40-60 100-90 170-70"/>
+    <path d="M1160 470c-40-60-100-90-170-70"/>
+  </g>
+  <g fill="#ffffff" fill-opacity=".12">
+    <circle cx="880" cy="330" r="52"/><circle cx="1070" cy="330" r="52"/>
+  </g>
+  <rect x="900" y="470" width="150" height="14" rx="7" fill="#cf4034" fill-opacity=".6"/>
+
+  <text x="1416" y="700" text-anchor="end" font-family="Roboto, sans-serif" font-size="13"
+        fill="#ffffff" fill-opacity=".38">Consultant handholding on site</text>
+</svg>

@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 720" role="img" aria-label="Lean manufacturing shop floor">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#33507e"/><stop offset="1" stop-color="#24355a"/>
+    </linearGradient>
+    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+      <path d="M48 0H0V48" fill="none" stroke="#ffffff" stroke-opacity=".07" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="1440" height="720" fill="url(#bg)"/>
+  <rect width="1440" height="720" fill="url(#grid)"/>
+  
+  <g fill="#ffffff" fill-opacity=".10">
+    <path d="M760 620V360l150 90v-90l150 90v-90l150 90v170z"/>
+    <rect x="1120" y="300" width="70" height="320" rx="6"/>
+  </g>
+  <g stroke="#ffffff" stroke-opacity=".22" stroke-width="3" fill="none">
+    <circle cx="980" cy="250" r="70"/><circle cx="980" cy="250" r="42"/>
+    <path d="M980 180v140M910 250h140"/>
+  </g>
+  <g fill="#cf4034" fill-opacity=".55">
+    <rect x="820" y="470" width="34" height="34" rx="5"/>
+    <rect x="880" y="470" width="34" height="34" rx="5"/>
+    <rect x="940" y="470" width="34" height="34" rx="5"/>
+  </g>
+
+  <text x="1416" y="700" text-anchor="end" font-family="Roboto, sans-serif" font-size="13"
+        fill="#ffffff" fill-opacity=".38">Lean manufacturing shop floor</text>
+</svg>

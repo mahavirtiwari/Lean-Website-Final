@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/LeanPortal.Api/LeanPortal.Api.csproj" />
+    <Project Path="src/LeanPortal.Application/LeanPortal.Application.csproj" />
+    <Project Path="src/LeanPortal.Domain/LeanPortal.Domain.csproj" />
+    <Project Path="src/LeanPortal.Infrastructure/LeanPortal.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/LeanPortal.Tests/LeanPortal.Tests.csproj" />
+  </Folder>
+</Solution>

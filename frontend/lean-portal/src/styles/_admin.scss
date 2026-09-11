@@ -1,0 +1,690 @@
+// =============================================================================
+//  Admin console
+//
+//  Shared chrome for the CMS back office: page headers, cards, data tables,
+//  toolbars and status pills. Kept global so every management screen looks and
+//  behaves the same without repeating styles per component.
+// =============================================================================
+
+// ------------------------------------------------------------- type scale ----
+// The console runs one step tighter than the public site. Everything downstream
+// is written as calc(var(--fs-*) * var(--font-scale)), so redefining the tokens
+// here moves every heading, label, table cell and menu item together - rather
+// than chasing individual rules and missing some.
+//
+// One point off each step. Kept as explicit values rather than a multiplier so
+// each size stays on a whole pixel and nothing lands on a half-pixel.
+.admin,
+.login {
+  --fs-xs: 0.6875rem; // 11px, was 12
+  --fs-sm: 0.75rem; // 12px, was 13
+  --fs-base: 0.875rem; // 14px, was 15
+  --fs-md: 0.9375rem; // 15px, was 16
+  --fs-lg: 1.0625rem; // 17px, was 18
+  --fs-xl: 1.3125rem; // 21px, was 22
+  --fs-2xl: 1.6875rem; // 27px, was 28
+  --fs-3xl: 2.0625rem; // 33px, was 34
+}
+
+// ------------------------------------------------------------ page header ----
+
+.page-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-5);
+}
+
+.page-head__title {
+  font-size: calc(var(--fs-xl) * var(--font-scale));
+  margin-bottom: var(--sp-1);
+}
+
+.page-head__lead {
+  font-size: calc(var(--fs-sm) * var(--font-scale));
+  color: var(--c-ink-muted);
+  max-width: 70ch;
+  line-height: var(--lh-relaxed);
+}
+
+.page-head__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+// ------------------------------------------------------------------ cards ----
+
+.admin-card {
+  padding: var(--sp-5);
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+}
+
+.admin-card + .admin-card {
+  margin-top: var(--sp-4);
+}
+
+.admin-card__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin: calc(var(--sp-5) * -1) calc(var(--sp-5) * -1) var(--sp-5);
+  padding: var(--sp-4) var(--sp-5);
+  border-bottom: 1px solid var(--c-border);
+  background: var(--c-surface-alt);
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
+.admin-card__title {
+  font-size: calc(var(--fs-md) * var(--font-scale));
+}
+
+// ---------------------------------------------------------------- toolbar ----
+
+.admin-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-4);
+  padding: var(--sp-4);
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+}
+
+.admin-search {
+  position: relative;
+  flex: 1;
+  min-width: 220px;
+
+  app-icon {
+    position: absolute;
+    left: 0.8rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--c-ink-subtle);
+    pointer-events: none;
+  }
+
+  .input {
+    padding-left: 2.5rem;
+  }
+}
+
+// ------------------------------------------------------------ data tables ----
+
+.admin-table-wrap {
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+
+  // Scroll rather than hide. These tables carry fixed column widths and a row of
+  // actions; on a narrow window, or with the reader's text enlarged, the last
+  // column used to be cut off with no way to reach it.
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: calc(var(--fs-sm) * var(--font-scale));
+
+  th,
+  td {
+    padding: 0.85rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--c-border);
+    vertical-align: middle;
+  }
+
+  thead th {
+    font-family: var(--font-heading);
+    font-size: calc(var(--fs-sm) * var(--font-scale));
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--c-ink-muted);
+    background: var(--c-surface-alt);
+    white-space: nowrap;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  tbody tr:hover {
+    background: var(--c-surface-alt);
+  }
+
+  .cell-title {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    color: var(--c-ink-strong);
+  }
+
+  .cell-sub {
+    display: block;
+    margin-top: 2px;
+    font-size: calc(var(--fs-sm) * var(--font-scale));
+    color: var(--c-ink-muted);
+  }
+
+}
+
+// A table whose column widths are declared and must be kept. Auto layout treats
+// a declared width as a suggestion and will squeeze a column to give room to
+// another, which is how the activity log ended up wrapping "05 Sept 2026,
+// 02:12 pm" down five lines in a column set to 190px.
+.admin-table--fixed {
+  table-layout: fixed;
+
+  // Long values wrap inside their own column rather than widening it.
+  td {
+    overflow-wrap: anywhere;
+  }
+}
+
+// Values that must stay on one line: timestamps, IP addresses, short codes.
+.nowrap {
+  white-space: nowrap;
+}
+
+// Row actions. Deliberately not nested inside .admin-table: the block builder
+// uses the same grouping outside a table, and while this lived under the table
+// selector those buttons stacked into a column.
+.cell-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--sp-2);
+  white-space: nowrap;
+}
+
+// Compact icon button used inside table rows.
+.icon-btn {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--c-border);
+  color: var(--c-ink-muted);
+  background: var(--c-surface);
+  transition: all var(--transition);
+
+  &:hover {
+    border-color: var(--c-primary);
+    color: var(--c-primary);
+    background: var(--c-primary-soft);
+  }
+
+  &.icon-btn--danger:hover {
+    border-color: var(--c-danger);
+    color: var(--c-danger);
+    background: var(--c-danger-soft);
+  }
+}
+
+// ----------------------------------------------------------- status pills ----
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0.2rem 0.6rem;
+  font-family: var(--font-heading);
+  font-size: calc(var(--fs-xs) * var(--font-scale));
+  font-weight: 600;
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+
+  &::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentcolor;
+  }
+}
+
+.status--published,
+.status--responded,
+.status--completed {
+  background: var(--c-success-soft);
+  color: var(--c-success);
+}
+
+.status--draft,
+.status--new {
+  background: var(--c-info-soft);
+  color: var(--c-info);
+}
+
+.status--inreview,
+.status--inprogress,
+.status--upcoming {
+  background: var(--c-warning-soft);
+  color: var(--c-warning);
+}
+
+.status--archived,
+.status--closed,
+.status--cancelled,
+.status--spam {
+  background: var(--c-surface-sunken);
+  color: var(--c-ink-muted);
+}
+
+.status--registrationopen {
+  background: var(--c-primary-soft);
+  color: var(--c-primary);
+}
+
+// -------------------------------------------------------------- stat tiles ----
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-6);
+
+  @media (max-width: 900px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (max-width: 560px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.stat-tile {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  padding: var(--sp-5);
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-left: 4px solid var(--accent, var(--c-primary));
+  // Square on the left so the accent reads as a straight bar instead of curving
+  // away at top and bottom; rounded on the right as before.
+  border-radius: 0 var(--radius) var(--radius) 0;
+
+  &__icon {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    border-radius: var(--radius);
+    background: color-mix(in srgb, var(--accent, var(--c-primary)) 12%, transparent);
+    color: var(--accent, var(--c-primary));
+  }
+
+  &__value {
+    font-family: var(--font-heading);
+    font-size: calc(var(--fs-xl) * var(--font-scale));
+    font-weight: 700;
+    line-height: 1;
+    color: var(--c-ink-strong);
+    font-variant-numeric: tabular-nums;
+  }
+
+  &__label {
+    margin-top: 3px;
+    font-size: calc(var(--fs-sm) * var(--font-scale));
+    color: var(--c-ink-muted);
+  }
+}
+
+// -------------------------------------------------------------- two column ----
+
+.admin-split {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: var(--sp-5);
+  align-items: start;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+// -------------------------------------------------------------- drag rows ----
+
+.sortable-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--sp-2);
+
+  &__handle {
+    color: var(--c-ink-subtle);
+    cursor: grab;
+  }
+
+  &__body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  // A disabled block stays legible - an editor still has to read it to decide
+  // whether to bring it back - so the row is marked rather than faded out.
+  &.is-hidden {
+    background: var(--c-surface-alt);
+    border-style: dashed;
+
+    .block-title,
+    .block-sub {
+      color: var(--c-ink-muted);
+    }
+  }
+}
+
+// The two reorder arrows sit together as one control.
+.reorder {
+  display: inline-flex;
+  gap: 2px;
+  margin-right: var(--sp-2);
+}
+
+
+
+
+// ------------------------------------------------------------------ modal ----
+
+.modal-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: grid;
+  place-items: center;
+  padding: var(--sp-5);
+  background: rgba(var(--c-navy-rgb), 0.55);
+  overflow-y: auto;
+}
+
+.modal {
+  width: min(720px, 100%);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--c-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+
+  &--wide {
+    width: min(980px, 100%);
+  }
+
+  &__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-4);
+    padding: var(--sp-5);
+    border-bottom: 1px solid var(--c-border);
+  }
+
+  &__title {
+    font-size: calc(var(--fs-xl) * var(--font-scale));
+  }
+
+  &__body {
+    flex: 1;
+    padding: var(--sp-5);
+    overflow-y: auto;
+  }
+
+  &__foot {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: var(--sp-3);
+    padding: var(--sp-4) var(--sp-5);
+    border-top: 1px solid var(--c-border);
+    background: var(--c-surface-alt);
+  }
+}
+
+// ------------------------------------------------------------ misc helpers ----
+
+.admin-note {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+  background: var(--c-surface-tint);
+  border-radius: var(--radius-sm);
+  font-size: calc(var(--fs-sm) * var(--font-scale));
+  color: var(--c-ink-muted);
+  line-height: var(--lh-relaxed);
+
+  app-icon {
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: var(--c-slate);
+  }
+}
+
+.form-section {
+  padding-bottom: var(--sp-5);
+  margin-bottom: var(--sp-5);
+  border-bottom: 1px solid var(--c-border);
+
+  &:last-child {
+    padding-bottom: 0;
+    margin-bottom: 0;
+    border-bottom: none;
+  }
+
+  &__title {
+    margin-bottom: var(--sp-4);
+    font-size: calc(var(--fs-md) * var(--font-scale));
+    font-weight: 600;
+    color: var(--c-slate);
+  }
+}
+
+// ------------------------------------------------------------ editor tabs ----
+
+// A switch rather than a tick box: these turn a part of the live site on and off,
+// and a switch reads as a state you are in rather than an option you have ticked.
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  cursor: pointer;
+  font-family: var(--font-heading);
+  font-size: calc(var(--fs-sm) * var(--font-scale));
+  font-weight: 600;
+  color: var(--c-ink-muted);
+  user-select: none;
+
+  input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+  }
+
+  &__track {
+    position: relative;
+    flex-shrink: 0;
+    width: 38px;
+    height: 21px;
+    border-radius: 999px;
+    background: var(--c-border-strong);
+    transition: background-color var(--transition);
+  }
+
+  &__thumb {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--transition);
+  }
+
+  input:checked + &__track {
+    background: var(--c-primary);
+  }
+
+  input:checked + &__track &__thumb {
+    transform: translateX(17px);
+  }
+
+  input:focus-visible + &__track {
+    outline: 2px solid var(--c-primary);
+    outline-offset: 2px;
+  }
+
+  &.is-on {
+    color: var(--c-primary);
+  }
+}
+
+.editor-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+  margin-bottom: var(--sp-5);
+  border-bottom: 1px solid var(--c-border);
+}
+
+.editor-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 0.7rem 1.1rem;
+  font-family: var(--font-heading);
+  font-size: calc(var(--fs-sm) * var(--font-scale));
+  font-weight: 600;
+  color: var(--c-ink-muted);
+  border-bottom: 3px solid transparent;
+  margin-bottom: -1px;
+  transition: all var(--transition);
+
+  &:hover {
+    color: var(--c-primary);
+  }
+
+  &.is-active {
+    color: var(--c-primary);
+    border-bottom-color: var(--c-primary);
+  }
+
+  .badge {
+    background: var(--c-surface-sunken);
+  }
+}
+
+.back-link {
+  display: inline-flex;
+  margin-bottom: var(--sp-2);
+  font-size: calc(var(--fs-sm) * var(--font-scale));
+
+  &::after {
+    content: none;
+  }
+}
+
+.code-area {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: calc(var(--fs-sm) * var(--font-scale));
+  line-height: 1.6;
+}
+
+.banner-preview {
+  margin-top: var(--sp-2);
+  max-height: 130px;
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-sm);
+}
+
+.cell-thumb {
+  width: 84px;
+  height: 52px;
+  object-fit: cover;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--c-border);
+}
+
+.swatch {
+  display: inline-block;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--c-border-strong);
+}
+
+.order-buttons {
+  display: flex;
+  gap: 3px;
+
+  .icon-btn {
+    width: 26px;
+    height: 26px;
+  }
+}
+
+.numeric {
+  font-variant-numeric: tabular-nums;
+}
+
+// ------------------------------------------------------------ image field ----
+// A path box, an upload button that drives a hidden file input, and a preview of
+// whatever is currently set.
+
+.image-field {
+  display: grid;
+  gap: var(--sp-3);
+}
+
+.image-field__row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+
+  .input {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  // The upload control is a label driving a hidden input, so it has to be told
+  // to look and behave like the button it is.
+  label.btn {
+    cursor: pointer;
+    flex-shrink: 0;
+
+    &.is-busy {
+      pointer-events: none;
+      opacity: 0.7;
+    }
+  }
+}
+
+.image-field__preview {
+  justify-self: start;
+  max-width: 260px;
+  max-height: 130px;
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-sm);
+  background: var(--c-surface-sunken);
+}

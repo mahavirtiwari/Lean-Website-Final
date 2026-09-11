@@ -1,0 +1,353 @@
+@if (loading()) {
+  <app-loading-panel />
+} @else {
+  <div class="page-head">
+    <div>
+      <a routerLink="/admin/pages" class="link-arrow back-link">
+        <app-icon name="arrow-left" [size]="15" />
+        All pages
+      </a>
+      <h1 class="page-head__title">
+        {{ page() ? page()!.title : 'New page' }}
+      </h1>
+      @if (page(); as current) {
+        <p class="page-head__lead">
+          <span class="status" [class]="'status--' + current.status.toLowerCase()">
+            {{ current.status | humanise }}
+          </span>
+          <span class="text-muted">
+            /{{ current.slug }}
+            @if (current.updatedAt) {
+              &middot; updated {{ current.updatedAt | govDate }}
+              @if (current.updatedBy) {
+                by {{ current.updatedBy }}
+              }
+            }
+          </span>
+        </p>
+      }
+    </div>
+
+    <div class="page-head__actions">
+      @if (page(); as current) {
+        <a
+          [href]="'/' + (current.slug === 'home' ? '' : current.slug)"
+          target="_blank"
+          rel="noopener"
+          class="btn btn--outline btn--sm"
+        >
+          <app-icon name="eye" [size]="16" />
+          Preview
+        </a>
+
+        @if (auth.canPublish) {
+          @if (current.status !== 'Published') {
+            <button type="button" class="btn btn--slate btn--sm" (click)="changeStatus('Published')">
+              <app-icon name="check-circle" [size]="16" />
+              Publish
+            </button>
+          } @else {
+            <button type="button" class="btn btn--outline btn--sm" (click)="changeStatus('Draft')">
+              <app-icon name="edit" [size]="16" />
+              Unpublish
+            </button>
+          }
+        } @else if (current.status === 'Draft') {
+          <button type="button" class="btn btn--outline btn--sm" (click)="changeStatus('InReview')">
+            Submit for review
+          </button>
+        }
+      }
+
+      <button type="button" class="btn btn--primary btn--sm" (click)="save()" [disabled]="saving()">
+        @if (saving()) {
+          <span class="spinner spinner--sm"></span>
+          Saving…
+        } @else {
+          <app-icon name="save" [size]="16" />
+          Save
+        }
+      </button>
+    </div>
+  </div>
+
+  <!-- ------------------------------------------------------------- tabs -->
+  <div class="editor-tabs" role="tablist" aria-label="Page editor sections">
+    <button
+      type="button"
+      role="tab"
+      class="editor-tab"
+      [class.is-active]="tab() === 'content'"
+      [attr.aria-selected]="tab() === 'content'"
+      (click)="tab.set('content')"
+    >
+      <app-icon name="file-text" [size]="16" />
+      Content
+    </button>
+
+    @if (isBlocksTemplate() && page()) {
+      <button
+        type="button"
+        role="tab"
+        class="editor-tab"
+        [class.is-active]="tab() === 'blocks'"
+        [attr.aria-selected]="tab() === 'blocks'"
+        (click)="tab.set('blocks')"
+      >
+        <app-icon name="layers" [size]="16" />
+        Page blocks
+        <span class="badge">{{ page()!.blocks.length }}</span>
+      </button>
+    }
+
+    <button
+      type="button"
+      role="tab"
+      class="editor-tab"
+      [class.is-active]="tab() === 'seo'"
+      [attr.aria-selected]="tab() === 'seo'"
+      (click)="tab.set('seo')"
+    >
+      <app-icon name="search" [size]="16" />
+      SEO &amp; banner
+    </button>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+    <!-- ---------------------------------------------------------- content -->
+    @if (tab() === 'content') {
+      <div class="admin-split">
+        <section class="admin-card">
+          <div class="field">
+            <label class="field__label" for="p-title">Title <span class="required">*</span></label>
+            <input
+              id="p-title"
+              type="text"
+              class="input"
+              formControlName="title"
+              (blur)="suggestSlug()"
+              [class.is-invalid]="invalid('title')"
+            />
+            @if (invalid('title')) {
+              <p class="field__error">A title is required.</p>
+            }
+          </div>
+
+          <div class="field">
+            <label class="field__label" for="p-slug">Slug <span class="required">*</span></label>
+            <input
+              id="p-slug"
+              type="text"
+              class="input"
+              formControlName="slug"
+              [class.is-invalid]="invalid('slug')"
+            />
+            @if (invalid('slug')) {
+              <p class="field__error">
+                Use lower-case letters, digits and hyphens. Use a forward slash for nesting, for example
+                about-scheme/objective.
+              </p>
+            } @else {
+              <p class="field__hint">The address of the page: /{{ form.controls.slug.value }}</p>
+            }
+          </div>
+
+          <div class="field">
+            <label class="field__label" for="p-short">Short title</label>
+            <input id="p-short" type="text" class="input" formControlName="shortTitle" />
+            <p class="field__hint">Used in menus and breadcrumbs when the full title is long.</p>
+          </div>
+
+          <div class="field">
+            <label class="field__label" for="p-summary">Summary</label>
+            <textarea id="p-summary" class="textarea" rows="2" formControlName="summary"></textarea>
+            <p class="field__hint">Shown under the page title and used as the default meta description.</p>
+          </div>
+
+          @if (!isBlocksTemplate()) {
+            <div class="field">
+              <label class="field__label" for="p-body">Content</label>
+              <app-rich-text-field
+                label="Content"
+                name="body"
+                [rows]="20"
+                [value]="form.controls.body.value || ''"
+                (valueChange)="form.controls.body.setValue($event)"
+              />
+              <p class="field__hint">
+                HTML is accepted. Scripts and unsafe attributes are stripped when the page is saved.
+              </p>
+            </div>
+          } @else {
+            <div class="admin-note">
+              <app-icon name="info" [size]="18" />
+              <span>
+                This page is composed from blocks. Use the <strong>Page blocks</strong> tab to arrange its
+                bands.
+              </span>
+            </div>
+          }
+        </section>
+
+        <!-- ------------------------------------------------------ settings -->
+        <aside class="admin-card">
+          <div class="field">
+            <label class="field__label" for="p-template">Template</label>
+            <select id="p-template" class="select" formControlName="template">
+              @for (option of templates; track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+            @for (option of templates; track option.value) {
+              @if (option.value === form.controls.template.value) {
+                <p class="field__hint">{{ option.hint }}</p>
+              }
+            }
+          </div>
+
+          @if (form.controls.template.value === 'Custom') {
+            <div class="field">
+              <label class="field__label" for="p-component">Component key</label>
+              <input id="p-component" type="text" class="input" formControlName="customComponent" />
+              <p class="field__hint">For example gallery, faqs, contact.</p>
+            </div>
+          }
+
+          <div class="field">
+            <label class="field__label" for="p-parent">Parent page</label>
+            <select id="p-parent" class="select" formControlName="parentId">
+              <option [ngValue]="null">None (top level)</option>
+              @for (option of parentOptions(); track option.id) {
+                <option [ngValue]="option.id">{{ option.title }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="field">
+            <label class="field__label" for="p-order">Sort order</label>
+            <input id="p-order" type="number" class="input" formControlName="sortOrder" />
+          </div>
+
+          <div class="field">
+            <label class="checkbox">
+              <input type="checkbox" formControlName="showInMainMenu" />
+              <span>Offer in the main menu</span>
+            </label>
+          </div>
+
+          <div class="field">
+            <label class="checkbox">
+              <input type="checkbox" formControlName="showSidebarNav" />
+              <span>Show section navigation in the sidebar</span>
+            </label>
+          </div>
+        </aside>
+      </div>
+    }
+
+    <!-- ------------------------------------------------------------- seo -->
+    @if (tab() === 'seo') {
+      <div class="admin-split">
+        <section class="admin-card">
+          <h2 class="form-section__title">Search engine listing</h2>
+
+          <div class="field">
+            <label class="field__label" for="p-metatitle">Meta title</label>
+            <input id="p-metatitle" type="text" class="input" formControlName="metaTitle" maxlength="300" />
+            <p class="field__hint">Defaults to the page title if left blank.</p>
+          </div>
+
+          <div class="field">
+            <label class="field__label" for="p-metadesc">Meta description</label>
+            <textarea
+              id="p-metadesc"
+              class="textarea"
+              rows="3"
+              formControlName="metaDescription"
+              maxlength="500"
+            ></textarea>
+            <p class="field__hint">Aim for 150 to 160 characters.</p>
+          </div>
+
+          <div class="field">
+            <label class="field__label" for="p-keywords">Meta keywords</label>
+            <input id="p-keywords" type="text" class="input" formControlName="metaKeywords" />
+          </div>
+
+          <div class="field">
+            <label class="field__label" for="p-og">Social share image</label>
+            <input id="p-og" type="text" class="input" formControlName="ogImageUrl" />
+          </div>
+        </section>
+
+        <aside class="admin-card">
+          <h2 class="form-section__title">Page banner</h2>
+
+          <div class="field">
+            <label class="field__label" for="p-banner">Banner image</label>
+
+            <div class="image-field">
+              <div class="image-field__row">
+                <input
+                  id="p-banner"
+                  type="text"
+                  class="input"
+                  placeholder="Upload a file, or paste a path"
+                  formControlName="bannerImageUrl"
+                />
+
+                <!-- The file input is hidden and driven by the label, so the control
+                     matches the upload on every other screen. -->
+                <input
+                  type="file"
+                  class="sr-only"
+                  accept="image/*"
+                  id="p-banner-upload"
+                  (change)="uploadBanner($event)"
+                />
+                <label class="btn btn--outline btn--sm" for="p-banner-upload">
+                  @if (uploading()) {
+                    <span class="spinner spinner--sm"></span>
+                    Uploading…
+                  } @else {
+                    <app-icon name="upload" [size]="15" />
+                    Upload
+                  }
+                </label>
+
+                @if (form.controls.bannerImageUrl.value) {
+                  <button
+                    type="button"
+                    class="btn btn--ghost btn--sm"
+                    (click)="form.controls.bannerImageUrl.setValue('')"
+                  >
+                    Clear
+                  </button>
+                }
+              </div>
+
+              @if (form.controls.bannerImageUrl.value) {
+                <img class="banner-preview" [src]="form.controls.bannerImageUrl.value" alt="" />
+              } @else {
+                <p class="field__hint">
+                  With none uploaded the page shows the designed band with the scheme
+                  motif, which is what most pages want.
+                </p>
+              }
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="field__label" for="p-caption">Banner caption</label>
+            <input id="p-caption" type="text" class="input" formControlName="bannerCaption" />
+          </div>
+        </aside>
+      </div>
+    }
+  </form>
+
+  <!-- ----------------------------------------------------------- blocks -->
+  @if (tab() === 'blocks' && page(); as current) {
+    <app-block-builder [pageId]="current.id" [blocks]="current.blocks" />
+  }
+}

@@ -1,0 +1,120 @@
+@if (current(); as banner) {
+  <section
+    class="hero"
+    aria-roledescription="carousel"
+    aria-label="Featured highlights"
+    (mouseenter)="paused.set(true)"
+    (mouseleave)="paused.set(false)"
+    (focusin)="paused.set(true)"
+    (focusout)="paused.set(false)"
+  >
+    <div class="hero__media" aria-hidden="true">
+      <!-- No slide is lazy. A hidden slide never enters the viewport, so the
+           deferred load never fired and every slide after the first rendered as
+           the gradient with no photograph behind it. The first keeps high
+           priority because it is the page's largest paint; the rest fetch at low
+           priority so they do not compete with it. -->
+      @for (slide of banners(); track slide.id) {
+        <img
+          [src]="slide.imageUrl"
+          [alt]="slide.altText || ''"
+          class="hero__image"
+          [class.is-active]="$index === index()"
+          loading="eager"
+          [attr.fetchpriority]="$index === 0 ? 'high' : 'low'"
+        />
+      }
+      <span class="hero__scrim"></span>
+    </div>
+
+    <div class="container hero__inner">
+      <div
+        class="hero__content"
+        role="group"
+        aria-roledescription="slide"
+        [attr.aria-label]="'Slide ' + (index() + 1) + ' of ' + count()"
+      >
+        @if (banner.eyebrow) {
+          <p class="hero__eyebrow">{{ banner.eyebrow }}</p>
+        }
+
+        <h1 class="hero__title">
+          <span>{{ banner.title }}</span>
+          @if (banner.highlightedTitle) {
+            <span class="hero__title-accent">{{ banner.highlightedTitle }}</span>
+          }
+        </h1>
+
+        @if (banner.subtitle) {
+          <p class="hero__lead">{{ banner.subtitle }}</p>
+        }
+
+        <div class="hero__actions">
+          @if (banner.primaryButtonText && banner.primaryButtonUrl) {
+            @if (isExternal(banner.primaryButtonUrl)) {
+              <a
+                [href]="link(banner.primaryButtonUrl)"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="btn btn--primary btn--lg"
+              >
+                {{ banner.primaryButtonText }}
+                <app-icon name="arrow-right" [size]="18" />
+              </a>
+            } @else {
+              <a [routerLink]="link(banner.primaryButtonUrl)" class="btn btn--primary btn--lg">
+                {{ banner.primaryButtonText }}
+                <app-icon name="arrow-right" [size]="18" />
+              </a>
+            }
+          }
+
+          @if (banner.secondaryButtonText && banner.secondaryButtonUrl) {
+            @if (isExternal(banner.secondaryButtonUrl)) {
+              <a
+                [href]="link(banner.secondaryButtonUrl)"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="btn btn--ghost-light btn--lg"
+              >
+                {{ banner.secondaryButtonText }}
+              </a>
+            } @else {
+              <a [routerLink]="link(banner.secondaryButtonUrl)" class="btn btn--ghost-light btn--lg">
+                {{ banner.secondaryButtonText }}
+              </a>
+            }
+          }
+        </div>
+      </div>
+    </div>
+
+    @if (count() > 1) {
+      <div class="container hero__controls">
+        <button type="button" class="hero__arrow" (click)="previous()" aria-label="Previous slide">
+          <app-icon name="chevron-left" [size]="20" />
+        </button>
+
+        <div class="hero__dots" role="tablist" aria-label="Choose slide">
+          @for (slide of banners(); track slide.id) {
+            <button
+              type="button"
+              role="tab"
+              class="hero__dot"
+              [class.is-active]="$index === index()"
+              [attr.aria-selected]="$index === index()"
+              [attr.aria-label]="'Slide ' + ($index + 1) + ': ' + slide.title"
+              (click)="goTo($index)"
+            ></button>
+          }
+        </div>
+
+        <button type="button" class="hero__arrow" (click)="next()" aria-label="Next slide">
+          <app-icon name="chevron-right" [size]="20" />
+        </button>
+      </div>
+    }
+
+    <p class="sr-only" aria-live="polite">Slide {{ index() + 1 }} of {{ count() }}: {{ banner.title }}</p>
+  </section>
+}

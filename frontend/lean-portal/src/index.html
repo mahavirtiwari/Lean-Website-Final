@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>MSME Competitive (LEAN) Scheme | Ministry of MSME, Government of India</title>
+    <base href="/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0f7989" />
+    <meta
+      name="description"
+      content="Official portal of the MSME Competitive (LEAN) Scheme, Ministry of Micro, Small and Medium Enterprises, Government of India."
+    />
+
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+
+    <!--
+      The colour theme chosen in the console. A stylesheet rather than a script so
+      the page is drawn in its theme from the first paint; it overrides the brand
+      tokens only, and stands aside when a visitor turns on high contrast.
+    -->
+    <link rel="stylesheet" href="/api/site/theme.css" />
+
+    <!--
+      Inter carries the interface; Noto Sans Devanagari carries the Hindi in the
+      government strip and anything Bhashini translates into Devanagari. Both are
+      self-hosted from /assets/fonts and declared in src/styles/_fonts.scss, so the
+      portal makes no request to a font CDN and nothing outside this origin learns
+      who is reading a government site.
+
+      Preloaded here because the interface font is on the critical path: it is
+      discovered inside a stylesheet the browser has to fetch and parse first, and
+      without this the first paint is in the fallback face.
+    -->
+    <link
+      rel="preload"
+      href="/assets/fonts/inter-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+
+    <!--
+      The Bhashini translation plugin is loaded by BhashiniSlotComponent after
+      Angular has rendered its container, not from here: the plugin binds to
+      .bhashini-plugin-container on init, and from here it would race bootstrap.
+    -->
+  </head>
+  <body>
+    <app-root>
+      <!-- Shown until Angular bootstraps. -->
+      <div style="display:grid;place-items:center;min-height:100vh;font-family:system-ui,sans-serif">
+        <p style="color:#77818f">Loading the LEAN Scheme portal&hellip;</p>
+      </div>
+    </app-root>
+    <noscript>
+      <div style="padding:2rem;text-align:center;font-family:system-ui,sans-serif">
+        <h1>JavaScript is required</h1>
+        <p>
+          This portal needs JavaScript to display its content. Please enable JavaScript in your browser, or
+          contact us for the information you need.
+        </p>
+      </div>
+    </noscript>
+  </body>
+</html>

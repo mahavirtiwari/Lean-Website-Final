@@ -1,0 +1,250 @@
+// =============================================================================
+//  Layout primitives: containers, sections, grids and the two-column
+//  internal-page shell taken from the finance-press reference.
+// =============================================================================
+
+.container {
+  width: 100%;
+  max-width: var(--container);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.container--narrow {
+  max-width: var(--container-narrow);
+}
+
+.container--wide {
+  max-width: 1400px;
+}
+
+// -------------------------------------------------------------- sections ----
+
+.section {
+  padding-block: var(--section-y);
+
+  @media (max-width: 768px) {
+    padding-block: var(--section-y-sm);
+  }
+}
+
+.section--tight {
+  padding-block: var(--section-y-sm);
+}
+
+// Two names, one colour: both were in use across the site before the bands were
+// brought into line, and both keep working rather than being renamed everywhere.
+.section--alt,
+.section--tint {
+  background: var(--c-band);
+}
+
+.section--navy {
+  background: var(--c-navy);
+  color: rgba(255, 255, 255, 0.86);
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: #fff;
+  }
+}
+
+// The eyebrow / heading / lead stack that opens most bands on the home page.
+// Section headings run left across the site. They were centred on the home page
+// bands, which put them out of step with every inner page and with the copy
+// underneath them.
+.section-head {
+  max-width: 720px;
+  margin-bottom: var(--sp-7);
+}
+
+.section-eyebrow {
+  display: block;
+  font-family: var(--font-heading);
+  font-size: calc(var(--fs-sm) * var(--font-scale));
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--c-primary);
+  margin-bottom: var(--sp-3);
+
+  // Small text on a dark ground: use the AA-safe tint, not the display one.
+  .section--navy & {
+    color: var(--c-primary-on-dark-text);
+  }
+}
+
+.section-title {
+  font-size: calc(var(--fs-3xl) * var(--font-scale));
+  margin-bottom: var(--sp-3);
+}
+
+.section-lead {
+  font-size: calc(var(--fs-lg) * var(--font-scale));
+  line-height: var(--lh-relaxed);
+  color: var(--c-ink-muted);
+
+  .section--navy & {
+    color: rgba(255, 255, 255, 0.75);
+  }
+}
+
+// ----------------------------------------------------------------- grids ----
+
+.grid {
+  display: grid;
+  gap: var(--sp-5);
+}
+
+.grid--2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.grid--3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.grid--4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@media (max-width: 1024px) {
+  .grid--4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .grid--3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .grid--2,
+  .grid--3,
+  .grid--4 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+// Alternating text / image split used by the welcome and message bands.
+.split {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-9);
+  align-items: center;
+
+  @media (max-width: 900px) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--sp-6);
+  }
+}
+
+.split--reverse > :first-child {
+  order: 2;
+
+  @media (max-width: 900px) {
+    order: 0;
+  }
+}
+
+// --------------------------------------------- internal page two-column ----
+//  Sidebar left, content right - the finance-press service page shell.
+
+.page-layout {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: var(--sp-8);
+  align-items: start;
+
+  @media (max-width: 992px) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--sp-6);
+  }
+}
+
+.page-layout--reverse {
+  grid-template-columns: minmax(0, 1fr) 300px;
+
+  @media (max-width: 992px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.page-sidebar {
+  position: sticky;
+  top: calc(var(--header-height) + var(--sp-5));
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+
+  @media (max-width: 992px) {
+    position: static;
+  }
+}
+
+// ------------------------------------------------------------- utilities ----
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.cluster {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.text-center {
+  text-align: center;
+}
+.text-right {
+  text-align: right;
+}
+.text-muted {
+  color: var(--c-ink-muted);
+}
+.text-small {
+  font-size: calc(var(--fs-sm) * var(--font-scale));
+}
+
+.mt-0 {
+  margin-top: 0;
+}
+.mb-0 {
+  margin-bottom: 0;
+}
+.mb-2 {
+  margin-bottom: var(--sp-2);
+}
+.mb-4 {
+  margin-bottom: var(--sp-4);
+}
+.mb-6 {
+  margin-bottom: var(--sp-6);
+}
+.mt-6 {
+  margin-top: var(--sp-6);
+}
+
+.full-width {
+  width: 100%;
+}
+
+// Horizontal scroll container so wide tables never break the page.
+.scroll-x {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+
+
+  // A table inside the wrapper must not shrink its columns to fit - that is what
+  // the horizontal scroll is for.
+  > table {
+    min-width: 100%;
+    width: max-content;
+    max-width: none;
+  }
+}

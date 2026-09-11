@@ -1,0 +1,272 @@
+// =============================================================================
+//  Accessibility toolkit effects
+//
+//  AccessibilityService puts these classes on <html>. Keeping the effects here,
+//  as plain CSS, means they survive route changes and need no re-application,
+//  and that a reader's preference cannot be undone by a component re-render.
+// =============================================================================
+
+// ------------------------------------------------------------ text spacing ----
+
+html.a11y-text-spacing {
+  body,
+  p,
+  li,
+  dd,
+  dt,
+  td,
+  th,
+  blockquote,
+  figcaption,
+  label,
+  a,
+  span:not(.badge):not(.status) {
+    letter-spacing: 0.09em !important;
+    word-spacing: 0.16em !important;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    letter-spacing: 0.03em !important;
+  }
+}
+
+// ------------------------------------------------------------- line height ----
+
+html.a11y-line-height {
+  body,
+  p,
+  li,
+  dd,
+  td,
+  blockquote,
+  .prose {
+    line-height: 2 !important;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    line-height: 1.5 !important;
+  }
+}
+
+// --------------------------------------------------------- dyslexia friendly ----
+
+html.a11y-dyslexia {
+  // Verdana and Tahoma are the widely available faces with the most open
+  // letterforms and least character ambiguity, so no font download is needed.
+  body,
+  input,
+  select,
+  textarea,
+  button {
+    font-family: Verdana, Tahoma, 'Trebuchet MS', sans-serif !important;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  .brand__name,
+  .section-title {
+    font-family: Verdana, Tahoma, 'Trebuchet MS', sans-serif !important;
+    letter-spacing: 0.01em;
+  }
+
+  p,
+  li {
+    letter-spacing: 0.05em;
+    word-spacing: 0.12em;
+    line-height: 1.9;
+    max-width: 68ch;
+  }
+
+  // Italics are notably harder to read; render them upright and emphasised.
+  em,
+  i,
+  blockquote {
+    font-style: normal !important;
+    font-weight: 600;
+  }
+}
+
+// -------------------------------------------------------------- reading mask ----
+
+html.a11y-adhd {
+  // A band that follows the pointer, dimming everything outside it so the
+  // reader's attention stays on one line of text.
+  &::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 9998;
+    pointer-events: none;
+    background: linear-gradient(
+      to bottom,
+      rgba(10, 20, 40, 0.72) 0,
+      rgba(10, 20, 40, 0.72) calc(var(--a11y-mask-y, 50vh) - 5.5rem),
+      transparent calc(var(--a11y-mask-y, 50vh) - 5.5rem),
+      transparent calc(var(--a11y-mask-y, 50vh) + 5.5rem),
+      rgba(10, 20, 40, 0.72) calc(var(--a11y-mask-y, 50vh) + 5.5rem),
+      rgba(10, 20, 40, 0.72) 100%
+    );
+  }
+}
+
+// ---------------------------------------------------------------- saturation ----
+
+html.a11y-saturation-low body {
+  filter: saturate(0.5);
+}
+
+html.a11y-saturation-high body {
+  filter: saturate(1.7);
+}
+
+html.a11y-grayscale body {
+  filter: grayscale(1);
+}
+
+// ------------------------------------------------------------ invert colours ----
+
+html.a11y-invert body {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+// Invert the media back, so photographs and logos stay recognisable.
+html.a11y-invert img,
+html.a11y-invert video,
+html.a11y-invert svg image {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+// Combined filters have to be written out: a second `filter` would replace it.
+html.a11y-invert.a11y-grayscale body {
+  filter: invert(1) hue-rotate(180deg) grayscale(1);
+}
+html.a11y-invert.a11y-saturation-low body {
+  filter: invert(1) hue-rotate(180deg) saturate(0.5);
+}
+html.a11y-invert.a11y-saturation-high body {
+  filter: invert(1) hue-rotate(180deg) saturate(1.7);
+}
+
+// ---------------------------------------------------------- highlight links ----
+
+html.a11y-highlight-links {
+  a:not(.btn):not(.brand) {
+    text-decoration: underline !important;
+    text-underline-offset: 3px;
+    text-decoration-thickness: 2px !important;
+    outline: 2px solid currentcolor;
+    outline-offset: 2px;
+    background: rgba(255, 235, 59, 0.32);
+    color: #1a1a1a !important;
+  }
+
+  // On dark bands the yellow wash needs light text to stay legible.
+  .section--navy a:not(.btn),
+  .site-footer a:not(.btn),
+  .hero a:not(.btn) {
+    background: rgba(255, 235, 59, 0.9);
+    color: #1a1a1a !important;
+  }
+
+  .btn {
+    outline: 3px dashed currentcolor;
+    outline-offset: 3px;
+  }
+}
+
+// -------------------------------------------------------------- large cursor ----
+
+html.a11y-big-cursor,
+html.a11y-big-cursor * {
+  // A 48px arrow, drawn inline so there is no asset to fetch.
+  cursor:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cpath d='M8 4 38 22l-13 2.5L18 40Z' fill='%23ffffff' stroke='%23000000' stroke-width='2.5' stroke-linejoin='round'/%3E%3C/svg%3E")
+      4 4,
+    auto !important;
+}
+
+html.a11y-big-cursor a,
+html.a11y-big-cursor button,
+html.a11y-big-cursor [role='button'],
+html.a11y-big-cursor label,
+html.a11y-big-cursor select {
+  cursor:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cpath d='M18 4v22l-5-4-4 5 9 13h16l4-16-8-4V9l-6-2-6-3Z' fill='%23ffffff' stroke='%23000000' stroke-width='2.5' stroke-linejoin='round'/%3E%3C/svg%3E")
+      12 4,
+    pointer !important;
+}
+
+// ----------------------------------------------------------- pause animation ----
+
+html.a11y-pause-animation,
+html.a11y-pause-animation *,
+html.a11y-pause-animation *::before,
+html.a11y-pause-animation *::after {
+  animation-play-state: paused !important;
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+// ---------------------------------------------------------------- hide images ----
+
+html.a11y-hide-images {
+  img,
+  picture,
+  video,
+  iframe {
+    visibility: hidden !important;
+  }
+
+  // Decorative backgrounds carry no information, so they go entirely; the
+  // placeholder keeps the layout from collapsing where an image had size.
+  .hero__media,
+  .cta,
+  .inner-banner {
+    background-image: none !important;
+  }
+
+  img {
+    position: relative;
+  }
+
+  img::after {
+    content: attr(alt);
+    visibility: visible;
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 0.5rem;
+    font-size: 0.8125rem;
+    text-align: center;
+    color: var(--c-ink-muted);
+    background: var(--c-surface-sunken);
+    border: 1px dashed var(--c-border-strong);
+    border-radius: var(--radius-xs);
+  }
+}
+
+// ------------------------------------------------------------------ printing ----
+
+@media print {
+  html.a11y-adhd::after,
+  html.a11y-invert body,
+  html.a11y-grayscale body {
+    filter: none;
+    background: none;
+  }
+}

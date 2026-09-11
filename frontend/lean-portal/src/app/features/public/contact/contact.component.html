@@ -1,0 +1,536 @@
+<app-cms-banner
+  slug="contact-us"
+  fallbackTitle="Contact Us"
+  fallbackSubtitle="Reach the LEAN Scheme team at the Ministry of MSME, or the implementing agency for your region."
+  fallbackEyebrow="Get in touch"
+  [fallbackBreadcrumbs]="[{ label: 'Home', url: '/' }, { label: 'Contact Us' }]"
+/>
+
+<!-- ------------------------------------------------ form, with the details beside -->
+<div class="section" id="enquiry">
+  <div class="container contact-layout">
+    <div class="contact-form-wrap">
+      @if (text('contact.formTitle', 'Send us a message'); as heading) {
+        <h2 class="contact-heading">{{ heading }}</h2>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+        <!-- Asked first, because it decides who reads the rest. Radios rather than
+             a dropdown: there are two agencies and both should be on screen. -->
+        <!-- Not asked when the console turns the question off, or when only one
+             agency is active: the enquiry then goes where the console says. -->
+        @if (askAgency() && agencies().length) {
+          <fieldset class="agency-choice">
+            <legend class="agency-choice__legend">
+              {{ text('contact.agencyLegend', 'Who is your enquiry for?') }}
+            </legend>
+
+            <div class="agency-choice__options">
+              @for (agency of agencies(); track agency.id) {
+                <label class="agency-option">
+                  <input type="radio" formControlName="agency" [value]="agency.shortName || agency.name" />
+                  <span class="agency-option__body">
+                    <strong>{{ agency.shortName || agency.name }}</strong>
+                    <small>{{ agency.shortName ? agency.name : 'Implementing agency' }}</small>
+                  </span>
+                </label>
+              }
+            </div>
+
+            @if (invalid('agency')) {
+              <p class="field__error">Please choose the agency your enquiry is for.</p>
+            }
+          </fieldset>
+        }
+
+        <!-- The agency chooser above stays put; only what follows it swaps. An
+             agency may host its own form - Zoho or anything else - and that form
+             takes over once they are chosen. It cannot wrap the chooser as well:
+             doing so left a visitor who picked the agency with a hosted form
+             unable to pick the other one without reloading the page. -->
+        @if (embeddedForm(); as embed) {
+          <iframe
+            class="contact-embed"
+            [src]="embed"
+            title="Enquiry form"
+            loading="lazy"
+            referrerpolicy="no-referrer"
+          ></iframe>
+        } @else {
+        @if (text('contact.formIntro', 'Complete the form and our team will respond.'); as intro) {
+          <p class="contact-intro">
+            {{ intro }} Fields marked
+            <span class="required" aria-hidden="true">*</span> are required.
+          </p>
+        }
+
+        @if (reference(); as ref) {
+          <div class="alert alert--success" role="status">
+            <app-icon name="check-circle" [size]="20" />
+            <div>
+              <strong>{{ text('contact.successTitle', 'Your enquiry has been received.') }}</strong>
+              <p class="mb-0">Reference number: <strong>{{ ref }}</strong>. Please quote it in any follow-up.</p>
+            </div>
+          </div>
+        }
+
+
+          <div class="form-grid">
+            <div class="field">
+              <label class="field__label" for="contact-name">
+                {{ text('contact.labelName', 'Your name') }} <span class="required" aria-hidden="true">*</span>
+              </label>
+              <input
+                id="contact-name"
+                type="text"
+                class="input"
+                formControlName="name"
+                autocomplete="name"
+                [class.is-invalid]="invalid('name')"
+                [attr.aria-invalid]="invalid('name')"
+                [attr.aria-describedby]="invalid('name') ? 'err-name' : null"
+              />
+              @if (invalid('name')) {
+                <p class="field__error" id="err-name">{{ errorFor('name') }}</p>
+              }
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="contact-email">
+                {{ text('contact.labelEmail', 'E-mail address') }} <span class="required" aria-hidden="true">*</span>
+              </label>
+              <input
+                id="contact-email"
+                type="email"
+                class="input"
+                formControlName="email"
+                autocomplete="email"
+                [class.is-invalid]="invalid('email')"
+                [attr.aria-invalid]="invalid('email')"
+                [attr.aria-describedby]="invalid('email') ? 'err-email' : null"
+              />
+              @if (invalid('email')) {
+                <p class="field__error" id="err-email">{{ errorFor('email') }}</p>
+              }
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="contact-phone">
+                {{ text('contact.labelPhone', 'Mobile number') }} <span class="required" aria-hidden="true">*</span>
+              </label>
+              <input
+                id="contact-phone"
+                type="tel"
+                class="input"
+                inputmode="numeric"
+                placeholder="10-digit mobile number"
+                formControlName="phone"
+                autocomplete="tel"
+                [class.is-invalid]="invalid('phone')"
+              />
+              @if (invalid('phone')) {
+                <p class="field__error">{{ errorFor('phone') }}</p>
+              }
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="contact-udyam">{{ text('contact.labelUdyam', 'Udyam Registration Number') }}</label>
+              <input
+                id="contact-udyam"
+                type="text"
+                class="input"
+                formControlName="udyamNumber"
+                placeholder="UDYAM-XX-00-0000000"
+              />
+              <p class="field__hint">{{ text('contact.udyamHint', 'Helps us look up your enterprise faster.') }}</p>
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="contact-org">{{ text('contact.labelOrganisation', 'Enterprise / organisation') }}</label>
+              <input id="contact-org" type="text" class="input" formControlName="organisation" />
+            </div>
+
+            <!-- An agency that classifies its enquiries - QCI, for its helpdesk -
+                 gets its grievance matrix as linked lists, each narrowing the next.
+                 Every other agency gets the plain category list. -->
+            @if (activeMatrix(); as matrix) {
+              <!-- No visible heading: the lists' own labels say enough. The group is
+                   still named for screen readers. -->
+              <fieldset class="grievance form-grid__full" [attr.aria-label]="'About your enquiry to ' + matrix.agency">
+
+                <div class="grievance__levels">
+                  @for (level of levels(); track level.control) {
+                    <div class="field">
+                      <label class="field__label" [for]="'grievance-' + level.control">
+                        {{ level.label }}
+                      </label>
+                      <select
+                        class="select"
+                        [id]="'grievance-' + level.control"
+                        [formControlName]="level.control"
+                        [attr.aria-invalid]="grievanceMissing() && !form.controls[level.control].value"
+                      >
+                        <option value="">Select…</option>
+                        @for (option of level.options; track option.name) {
+                          <option [value]="option.name">{{ option.name }}</option>
+                        }
+                      </select>
+                    </div>
+                  }
+                </div>
+
+                @if (grievanceMissing()) {
+                  <p class="field__error">Please choose from each list.</p>
+                }
+              </fieldset>
+            } @else {
+              <div class="field">
+                <label class="field__label" for="contact-category">{{ text('contact.labelCategory', 'What is your enquiry about?') }}</label>
+                <select id="contact-category" class="select" formControlName="category">
+                  <option value="">Select a category</option>
+                  @for (category of categories(); track category) {
+                    <option [value]="category">{{ category }}</option>
+                  }
+                </select>
+              </div>
+            }
+
+            <div class="field form-grid__full">
+              <label class="field__label" for="contact-subject">
+                Subject <span class="required" aria-hidden="true">*</span>
+              </label>
+              <input
+                id="contact-subject"
+                type="text"
+                class="input"
+                formControlName="subject"
+                [class.is-invalid]="invalid('subject')"
+                [attr.aria-invalid]="invalid('subject')"
+              />
+              @if (invalid('subject')) {
+                <p class="field__error">{{ errorFor('subject') }}</p>
+              }
+            </div>
+
+            <div class="field form-grid__full">
+              <label class="field__label" for="contact-message">
+                Message <span class="required" aria-hidden="true">*</span>
+              </label>
+              <textarea
+                id="contact-message"
+                class="textarea"
+                formControlName="message"
+                rows="6"
+                [class.is-invalid]="invalid('message')"
+                [attr.aria-invalid]="invalid('message')"
+                [attr.aria-describedby]="invalid('message') ? 'err-message' : null"
+              ></textarea>
+              @if (invalid('message')) {
+                <p class="field__error" id="err-message">{{ errorFor('message') }}</p>
+              }
+            </div>
+          </div>
+
+          <!-- Honeypot: hidden from people, filled in by bots. -->
+          <div class="honeypot" aria-hidden="true">
+            <label for="contact-website">Leave this field empty</label>
+            <input id="contact-website" type="text" formControlName="website" tabindex="-1" autocomplete="off" />
+          </div>
+
+          <div class="field form-grid__full">
+            <label class="field__label" for="contact-files">
+              {{ text('contact.attachmentsLabel', 'Attachments') }}
+              <span class="field__optional">(optional)</span>
+            </label>
+            <input
+              id="contact-files"
+              type="file"
+              class="input"
+              multiple
+              accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.webp"
+              (change)="onFiles($event)"
+            />
+            <p class="field__hint">
+              Up to {{ maxFiles }} files, 5 MB each. PDF, image, Word, Excel or PowerPoint.
+            </p>
+
+            @if (fileError(); as problem) {
+              <p class="field__error">{{ problem }}</p>
+            }
+
+            @if (files().length) {
+              <ul class="attachment-list">
+                @for (file of files(); track file.name) {
+                  <li>
+                    <app-icon name="file-text" [size]="15" />
+                    <span class="attachment-list__name">{{ file.name }}</span>
+                    <span class="attachment-list__size">{{ fileSize(file.size) }}</span>
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+
+          <div class="field form-grid__full">
+            <label class="field__label" for="contact-captcha">
+              {{ text('contact.verificationLabel', 'Verification') }}
+              <span class="required" aria-hidden="true">*</span>
+            </label>
+
+            <app-captcha #captcha answerId="contact-captcha" [(challengeId)]="captchaId" />
+
+            <input
+              id="contact-captcha"
+              type="text"
+              class="input"
+              autocomplete="off"
+              spellcheck="false"
+              [placeholder]="captcha.placeholder()"
+              [attr.aria-describedby]="captcha.describedBy() ? captcha.describedBy() + ' contact-captcha-hint' : 'contact-captcha-hint'"
+              formControlName="captchaAnswer"
+            />
+            <p class="field__hint" id="contact-captcha-hint">
+              @if (captcha.isQuestion()) {
+                Type the answer in figures, for example 7. You can also call or e-mail us - the
+                details are on this page.
+              } @else {
+                Type the five characters in the picture; capital or small letters both work. If you
+                cannot see the picture, choose "Answer a question instead" above, or call or e-mail
+                us - the details are on this page.
+              }
+            </p>
+          </div>
+
+          <button type="submit" class="btn btn--primary btn--lg" [disabled]="submitting()">
+            @if (submitting()) {
+              <span class="spinner spinner--sm"></span>
+              Sending…
+            } @else {
+              {{ text('contact.submitLabel', 'Send enquiry') }}
+              <app-icon name="arrow-right" [size]="18" />
+            }
+          </button>
+
+          <p class="form-privacy">
+            {{ text('contact.privacyNote', 'Your details are used only to respond to this enquiry.') }} See our
+            <a routerLink="/policies/privacy-policy">privacy policy</a>.
+          </p>
+        }
+      </form>
+    </div>
+
+    <aside class="contact-aside">
+      <section class="aside-card">
+        <h2 class="aside-card__title">
+          {{ text('contact.callTitle', 'Call or send us an email') }}
+        </h2>
+
+        <ul class="aside-list">
+          @if (settings()['contact.helpline']; as helpline) {
+            <li>
+              <app-icon name="phone" [size]="16" />
+              <a [href]="'tel:' + helpline">{{ helpline }}</a>
+              <small>{{ text('contact.helplineNote', 'Toll-free scheme helpline') }}</small>
+            </li>
+          }
+          @if (settings()['contact.phone']; as phone) {
+            <li>
+              <app-icon name="phone" [size]="16" />
+              <a [href]="'tel:' + phone">{{ phone }}</a>
+              <small>{{ text('contact.phoneNote', 'Office') }}</small>
+            </li>
+          }
+          @if (settings()['contact.email']; as mail) {
+            <li>
+              <app-icon name="mail" [size]="16" />
+              <a [href]="'mailto:' + mail">{{ mail }}</a>
+              <small>{{ text('contact.emailNote', 'General enquiries') }}</small>
+            </li>
+          }
+          @if (settings()['contact.supportEmail']; as support) {
+            <li>
+              <app-icon name="mail" [size]="16" />
+              <a [href]="'mailto:' + support">{{ support }}</a>
+              <small>{{ text('contact.supportNote', 'Portal and technical') }}</small>
+            </li>
+          }
+          @if (settings()['contact.workingHours']; as hours) {
+            <li>
+              <app-icon name="clock" [size]="16" />
+              <span class="aside-list__plain">{{ hours }}</span>
+            </li>
+          }
+        </ul>
+      </section>
+
+      <section class="aside-card">
+        <h2 class="aside-card__title">
+          {{ text('contact.visitTitle', 'Visit our office') }}
+        </h2>
+
+        <address class="aside-address">
+          @for (line of addressLines(); track $index) {
+            {{ line }}<br />
+          }
+        </address>
+
+        @if (mapEmbed(); as embed) {
+          <iframe
+            class="aside-map"
+            [src]="embed"
+            title="Map of the office"
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+          ></iframe>
+        }
+
+        <a [href]="mapLink()" target="_blank" rel="noopener noreferrer" class="link-arrow">
+          {{ text('contact.mapLinkLabel', 'Open in Google Maps') }}
+        </a>
+      </section>
+    </aside>
+  </div>
+</div>
+
+<!-- ------------------------------------------------------ implementing agencies -->
+@if (agencies().length) {
+  <div class="section section--alt">
+    <div class="container">
+      <div class="section-head">
+        @if (text('contact.agenciesEyebrow', 'Delivering the scheme'); as eyebrow) {
+          <p class="section-eyebrow">{{ eyebrow }}</p>
+        }
+        @if (text('contact.agenciesTitle', 'Implementing agencies'); as heading) {
+          <h2 class="section-title">{{ heading }}</h2>
+        }
+        @if (
+          text(
+            'contact.agenciesLead',
+            'Handholding, assessment and training are delivered through these bodies. Reach them directly for anything specific to your implementation.'
+          );
+          as lead
+        ) {
+          <p class="section-lead">{{ lead }}</p>
+        }
+      </div>
+
+      <div class="agency-grid">
+        @for (agency of agencies(); track agency.id) {
+          <article class="agency-card">
+            <header class="agency-card__head">
+              @if (agency.logoUrl) {
+                <img class="agency-card__logo" [src]="agency.logoUrl" [alt]="agency.name" />
+              } @else if (agency.shortName) {
+                <span class="agency-card__mark">{{ agency.shortName }}</span>
+              }
+              <div>
+                <h3 class="agency-card__name">{{ agency.name }}</h3>
+                @if (agency.shortName) {
+                  <p class="agency-card__short">{{ agency.shortName }}</p>
+                }
+              </div>
+            </header>
+
+            @if (agency.description) {
+              <p class="agency-card__text">{{ agency.description }}</p>
+            }
+
+            <ul class="agency-card__facts">
+              @if (agency.email) {
+                <li>
+                  <app-icon name="mail" [size]="15" />
+                  <a [href]="'mailto:' + agency.email">{{ agency.email }}</a>
+                </li>
+              }
+              @if (agency.phone) {
+                <li>
+                  <app-icon name="phone" [size]="15" />
+                  <a [href]="'tel:' + agency.phone">{{ agency.phone }}</a>
+                </li>
+              }
+            </ul>
+
+            <div class="agency-card__actions">
+              @if (agency.websiteUrl) {
+                <a
+                  [href]="agency.websiteUrl"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="btn btn--primary btn--sm"
+                >
+                  {{ text('contact.agencyWebsiteLabel', 'Visit website') }}
+                  <app-icon name="external-link" [size]="14" />
+                </a>
+              }
+              @if (agency.contactUrl) {
+                <a
+                  [href]="agency.contactUrl"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="btn btn--outline btn--sm"
+                >
+                  {{ text('contact.agencyContactLabel', 'Contact them') }}
+                  <app-icon name="external-link" [size]="14" />
+                </a>
+              }
+            </div>
+          </article>
+        }
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ---------------------------------------------------- web information manager -->
+<!--
+  GIGW asks every government site to publish who is responsible for its content.
+  Rendered only once the ministry has named the officer in the CMS: an empty
+  placeholder here would be worse than nothing, because a visitor would take it
+  for a contact that exists.
+-->
+@if (text('contact.wimName', '')) {
+  <div class="section">
+    <div class="container">
+      <section class="aside-card" aria-labelledby="wim-title">
+        <h2 class="aside-card__title" id="wim-title">
+          {{ text('contact.wimTitle', 'Web Information Manager') }}
+        </h2>
+
+        <dl class="wim__list">
+          <div class="wim__row">
+            <dt>Name</dt>
+            <dd>{{ text('contact.wimName', '') }}</dd>
+          </div>
+
+          @if (text('contact.wimDesignation', '')) {
+            <div class="wim__row">
+              <dt>Designation</dt>
+              <dd>{{ text('contact.wimDesignation', '') }}</dd>
+            </div>
+          }
+
+          @if (text('contact.wimEmail', '')) {
+            <div class="wim__row">
+              <dt>E-mail</dt>
+              <dd><a [href]="'mailto:' + text('contact.wimEmail', '')">{{ text('contact.wimEmail', '') }}</a></dd>
+            </div>
+          }
+
+          @if (text('contact.wimPhone', '')) {
+            <div class="wim__row">
+              <dt>Telephone</dt>
+              <dd><a [href]="'tel:' + text('contact.wimPhone', '')">{{ text('contact.wimPhone', '') }}</a></dd>
+            </div>
+          }
+
+          @if (text('contact.wimAddress', '')) {
+            <div class="wim__row">
+              <dt>Address</dt>
+              <dd>{{ text('contact.wimAddress', '') }}</dd>
+            </div>
+          }
+        </dl>
+      </section>
+    </div>
+  </div>
+}

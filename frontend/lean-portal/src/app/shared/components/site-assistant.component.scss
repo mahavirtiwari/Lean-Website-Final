@@ -1,0 +1,265 @@
+:host {
+  position: fixed;
+  right: var(--sp-5);
+  // Clear of the back-to-top control, which sits in the same corner.
+  bottom: calc(var(--sp-5) + 56px);
+  z-index: var(--z-sticky);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--sp-3);
+}
+
+.assistant-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 0.7rem 1rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--c-primary);
+  color: #fff;
+  font-family: var(--font-heading);
+  font-size: calc(var(--fs-sm) * var(--font-scale));
+  font-weight: 600;
+  box-shadow: var(--shadow-lg);
+  cursor: pointer;
+  transition: background-color var(--transition);
+
+  &:hover {
+    background: var(--c-primary-dark);
+  }
+
+  &.is-open {
+    padding: 0.7rem;
+  }
+}
+
+.assistant {
+  display: flex;
+  flex-direction: column;
+  width: min(380px, calc(100vw - var(--sp-5) * 2));
+  // Kept clear of the masthead: at 560 the panel reached over the header and the
+  // ticker, which made the page behind it unreadable while it was open.
+  max-height: min(480px, calc(100vh - 260px));
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+.assistant__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+  background: var(--c-primary-dark);
+  color: #fff;
+
+}
+
+.assistant__close {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+  transition: background-color var(--transition);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.16);
+  }
+}
+
+.assistant__title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: calc(var(--fs-base) * var(--font-scale));
+  font-weight: 700;
+  color: #fff;
+}
+
+/* Said on the panel, not only in the code: nobody should take a quoted passage
+   for an official reply written for them. */
+.assistant__note {
+  margin: 2px 0 0;
+  font-size: calc(var(--fs-xs) * var(--font-scale));
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.assistant__log {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: var(--sp-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.turn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.turn__text {
+  margin: 0;
+  padding: var(--sp-3);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  border-left: 3px solid var(--c-primary);
+  background: var(--c-band);
+  font-size: calc(var(--fs-sm) * var(--font-scale));
+  line-height: var(--lh-relaxed);
+  color: var(--c-ink-strong);
+}
+
+.turn--visitor .turn__text {
+  align-self: flex-end;
+  max-width: 85%;
+  border-left: 0;
+  border-radius: var(--radius) var(--radius) 0 var(--radius);
+  background: var(--c-primary);
+  color: #fff;
+}
+
+.turn__text--waiting {
+  color: var(--c-ink-muted);
+  font-style: italic;
+}
+
+.turn__sources {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+
+  a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-2);
+    padding: var(--sp-2) var(--sp-3);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-sm);
+    font-size: calc(var(--fs-sm) * var(--font-scale));
+    font-weight: 600;
+    color: var(--c-primary-dark);
+
+    &:hover {
+      border-color: var(--c-primary);
+      text-decoration: none;
+      background: var(--c-primary-soft);
+    }
+  }
+}
+
+.turn__kind {
+  flex-shrink: 0;
+  font-size: calc(var(--fs-xs) * var(--font-scale));
+  font-weight: 500;
+  color: var(--c-ink-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.assistant__prompt {
+  margin: var(--sp-2) 0 0;
+  font-family: var(--font-heading);
+  font-size: calc(var(--fs-xs) * var(--font-scale));
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--c-ink-muted);
+}
+
+.assistant__suggestions {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+
+  // Full width rather than wrapped chips: these are whole questions, and as pills
+  // they broke across lines and left ragged half-rows.
+  button {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    padding: var(--sp-2) var(--sp-3);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-sm);
+    background: var(--c-surface);
+    font-size: calc(var(--fs-sm) * var(--font-scale));
+    line-height: var(--lh-snug);
+    color: var(--c-ink-strong);
+    cursor: pointer;
+    text-align: left;
+
+    &::before {
+      content: '?';
+      display: grid;
+      place-items: center;
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+      border-radius: 50%;
+      background: var(--c-primary-soft);
+      color: var(--c-primary-dark);
+      font-family: var(--font-heading);
+      font-size: calc(var(--fs-xs) * var(--font-scale));
+      font-weight: 700;
+    }
+
+    &:hover {
+      border-color: var(--c-primary);
+      background: var(--c-primary-soft);
+      color: var(--c-primary-dark);
+    }
+  }
+}
+
+.assistant__ask {
+  display: flex;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-4) var(--sp-4);
+  border-top: 1px solid var(--c-border);
+}
+
+// On a phone the panel takes the width it needs, and the tab beside it is hidden
+// anyway, so nothing is fighting for the corner.
+@media (max-width: 640px) {
+  :host {
+    right: var(--sp-3);
+    bottom: calc(var(--sp-3) + 56px);
+  }
+}
+
+// A hosted chat page or a provider's widget, in place of the conversation. It
+// takes the room the conversation and the question box would have had.
+.assistant__frame {
+  display: block;
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 420px;
+  border: 0;
+  background: var(--c-surface);
+}
+
+// Said under any answer that did not come from the portal's own pages.
+.turn__external {
+  margin: var(--sp-2) 0 0;
+  font-size: var(--fs-xs);
+  color: var(--c-ink-muted);
+  font-style: italic;
+}

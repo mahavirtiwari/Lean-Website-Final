@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 80" role="img" aria-label="Quality Council of India">
+  <rect width="200" height="80" rx="8" fill="#ffffff" stroke="#e4e8ee"/>
+  <rect x="14" y="20" width="40" height="40" rx="8" fill="#4a6489"/>
+  <text x="34" y="46" text-anchor="middle" font-family="Poppins, sans-serif" font-size="15"
+        font-weight="700" fill="#ffffff">QC</text>
+  <text x="66" y="38" font-family="Poppins, sans-serif" font-size="13" font-weight="600" fill="#33507e">QCI</text>
+  <text x="66" y="53" font-family="Roboto, sans-serif" font-size="8" fill="#6b7280">logo placeholder</text>
+</svg>

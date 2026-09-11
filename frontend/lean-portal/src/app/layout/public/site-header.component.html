@@ -1,0 +1,179 @@
+<!-- ----------------------------------------------- government identity strip -->
+<div class="top-strip">
+  <div class="container top-strip__inner">
+    <span class="top-strip__gov">
+      भारत सरकार | {{ settings()['site.government'] || 'Government of India' }}
+      <span class="top-strip__dot" aria-hidden="true">·</span>
+      {{ settings()['site.ministryHindi'] || 'सूक्ष्म, लघु और मध्यम उद्यम मंत्रालय' }} |
+      {{ settings()['site.ministry'] || 'Ministry of Micro, Small and Medium Enterprises' }}
+    </span>
+
+  </div>
+</div>
+
+<!-- National tricolour rule, purely decorative. -->
+<div class="tri-band" aria-hidden="true">
+  <span class="tri-band__saffron"></span>
+  <span class="tri-band__white"></span>
+  <span class="tri-band__green"></span>
+</div>
+
+<!-- ------------------------------------------------------------------ masthead -->
+<header class="site-header" [class.is-stuck]="scrolled()">
+  <div class="container header-inner">
+    <!-- Government identity, then the scheme mark. -->
+    <div class="brand">
+      <!-- Both logos, and where each opens, are set under Branding in the console.
+           An outside address opens in a new tab and says so; a page of this site
+           opens in place. -->
+      @if (leftLogo(); as logo) {
+        <ng-container *ngTemplateOutlet="brandLink; context: { $implicit: logo, cls: 'brand__ministry', w: 569, h: 177 }" />
+      }
+
+      @if (leftLogo() && rightLogo()) {
+        <span class="brand__divider" aria-hidden="true"></span>
+      }
+
+      @if (rightLogo(); as logo) {
+        <ng-container *ngTemplateOutlet="brandLink; context: { $implicit: logo, cls: 'brand__scheme', w: 214, h: 76 }" />
+      }
+
+      <ng-template #brandLink let-logo let-cls="cls" let-w="w" let-h="h">
+        @if (logo.href && logo.external) {
+          <a class="brand__link" [href]="logo.href" target="_blank" rel="noopener noreferrer"
+             [attr.aria-label]="logo.alt + ' (opens in a new tab)'">
+            <img [class]="cls" [src]="logo.src" [alt]="logo.alt" [attr.width]="w" [attr.height]="h" />
+          </a>
+        } @else if (logo.href) {
+          <a class="brand__link" [routerLink]="logo.href" [attr.aria-label]="logo.alt">
+            <img [class]="cls" [src]="logo.src" [alt]="logo.alt" [attr.width]="w" [attr.height]="h" />
+          </a>
+        } @else {
+          <span class="brand__link">
+            <img [class]="cls" [src]="logo.src" [alt]="logo.alt" [attr.width]="w" [attr.height]="h" />
+          </span>
+        }
+      </ng-template>
+    </div>
+
+    <!-- Utilities stay outside the drawer so they remain reachable on mobile. -->
+    <div class="header-utilities">
+      @if (enabled('feature.bhashini')) {
+        <app-bhashini-slot />
+      }
+
+      @if (enabled('feature.accessibilityTools')) {
+        <app-accessibility-tools />
+      }
+
+      <button
+        type="button"
+        class="menu-btn"
+        (click)="toggleMenu()"
+        [attr.aria-expanded]="menuOpen()"
+        aria-controls="primary-navigation"
+      >
+        <span class="sr-only">Toggle main menu</span>
+        <app-icon [name]="menuOpen() ? 'close' : 'menu'" [size]="24" />
+      </button>
+    </div>
+
+    <!-- ---------------------------------------------------------- primary nav -->
+    <nav
+      id="primary-navigation"
+      class="main-nav"
+      [class.is-open]="menuOpen()"
+      aria-label="Main navigation"
+    >
+      <ul class="main-nav__list">
+        @for (item of mainMenu(); track item.id) {
+          <li
+            class="main-nav__item"
+            [class.has-children]="item.children.length > 0"
+            [class.is-open]="openSubmenu() === item.id"
+          >
+            @if (item.children.length) {
+              <button
+                type="button"
+                class="main-nav__link"
+                [class.is-cta]="item.isHighlighted"
+                (click)="toggleSubmenu(item, $event)"
+                [attr.aria-expanded]="openSubmenu() === item.id"
+              >
+                {{ item.label }}
+                <app-icon name="chevron-down" [size]="14" class="main-nav__caret" />
+              </button>
+
+              <ul class="submenu">
+                @for (child of item.children; track child.id) {
+                  <li>
+                    @if (isExternal(child)) {
+                      <a [href]="href(child)" target="_blank" rel="noopener noreferrer" (click)="closeMenu()">
+                        {{ child.label }}
+                        <app-icon name="external-link" [size]="13" />
+                      </a>
+                    } @else {
+                      <a [routerLink]="href(child)" routerLinkActive="is-active" (click)="closeMenu()">
+                        {{ child.label }}
+                      </a>
+                    }
+                  </li>
+                }
+              </ul>
+            } @else if (isExternal(item)) {
+              <a
+                [href]="href(item)"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="main-nav__link"
+                [class.is-cta]="item.isHighlighted"
+                (click)="closeMenu()"
+              >
+                {{ item.label }}
+              </a>
+            } @else if (isHome(item)) {
+              <!-- Home is an icon on the bar and a labelled row in the drawer. -->
+              <a
+                [routerLink]="href(item)"
+                routerLinkActive="is-active"
+                [routerLinkActiveOptions]="{ exact: true }"
+                class="main-nav__link main-nav__link--home"
+                [attr.title]="item.label"
+                (click)="closeMenu()"
+              >
+                <app-icon name="home" [size]="19" />
+                <span class="main-nav__home-label">{{ item.label }}</span>
+              </a>
+            } @else {
+              <a
+                [routerLink]="href(item)"
+                routerLinkActive="is-active"
+                [routerLinkActiveOptions]="{ exact: href(item) === '/' }"
+                class="main-nav__link"
+                [class.is-cta]="item.isHighlighted"
+                (click)="closeMenu()"
+              >
+                {{ item.label }}
+              </a>
+            }
+          </li>
+        }
+      </ul>
+
+      <!-- Repeated inside the drawer, where the masthead helpline is hidden. -->
+      @if (enabled('feature.helpline') && settings()['contact.helpline']; as helpline) {
+        <a class="nav-helpline" [href]="'tel:' + helpline">
+          <app-icon name="phone" [size]="18" />
+          <span>
+            <small>Scheme helpline</small>
+            <strong>{{ helpline }}</strong>
+          </span>
+        </a>
+      }
+    </nav>
+  </div>
+</header>
+
+@if (menuOpen()) {
+  <button type="button" class="nav-scrim" (click)="closeMenu()" aria-label="Close menu" tabindex="-1"></button>
+}

@@ -1,0 +1,554 @@
+// =============================================================================
+//  Masthead
+//
+//  Follows the government portal pattern: a dark identity strip, the national
+//  tricolour rule, then a single white row carrying the ministry lockup, the
+//  scheme mark, the menu and the reader utilities.
+// =============================================================================
+
+// -------------------------------------------------- government identity strip ----
+
+.top-strip {
+  background: var(--c-navy-deep);
+  color: rgba(255, 255, 255, 0.75);
+  font-size: calc(var(--fs-xs) * var(--font-scale));
+}
+
+.top-strip__inner {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--sp-4);
+  min-height: 34px;
+  padding-block: 6px;
+  flex-wrap: wrap;
+}
+
+.top-strip__gov {
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.top-strip__dot {
+  margin-inline: 4px;
+  opacity: 0.55;
+}
+
+
+// ------------------------------------------------------------- tricolour rule ----
+
+.tri-band {
+  display: flex;
+  height: 3px;
+
+  span {
+    flex: 1;
+  }
+}
+
+.tri-band__saffron {
+  background: #ff9933;
+}
+.tri-band__white {
+  background: #ffffff;
+}
+.tri-band__green {
+  background: #138808;
+}
+
+// -------------------------------------------------------------------- masthead ----
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-header);
+  background: var(--c-surface);
+  border-bottom: 1px solid var(--c-border);
+  transition: box-shadow var(--transition);
+
+  &.is-stuck {
+    box-shadow: var(--shadow-sm);
+  }
+}
+
+.header-inner,
+.top-strip__inner {
+  max-width: var(--container-header);
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  min-height: 84px;
+  padding-block: var(--sp-2);
+}
+
+// ----------------------------------------------------------------------- brand ----
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  flex-shrink: 0;
+  min-width: 0;
+
+  &:hover {
+    text-decoration: none;
+  }
+}
+
+.brand__link {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+
+  &:hover {
+    text-decoration: none;
+  }
+}
+
+.brand__ministry {
+  height: 62px;
+  width: auto;
+}
+
+.brand__scheme {
+  height: 72px;
+  width: auto;
+}
+
+.brand__divider {
+  width: 1px;
+  height: 40px;
+  margin-inline: 2px;
+  flex-shrink: 0;
+  background: var(--c-border-strong);
+}
+
+// ------------------------------------------------------------------- utilities ----
+// Bhashini selector, the accessibility trigger and the menu button. Ordered last
+// in the source but pulled to the right so they sit beside the menu.
+
+.header-utilities {
+  order: 3;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-shrink: 0;
+}
+
+// Bhashini injects its own markup; these rules only place and size it so it
+// matches the neighbouring controls rather than restyling the plugin itself.
+.bhashini-plugin-container {
+  display: flex;
+  align-items: center;
+
+  :global(.bhashini-dropdown-btn) {
+    height: 40px;
+  }
+}
+
+.menu-btn {
+  display: none;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  color: var(--c-navy);
+  border: 1px solid var(--c-border-strong);
+  border-radius: var(--radius-sm);
+
+  &:hover {
+    background: var(--c-primary-soft);
+    border-color: var(--c-primary);
+    color: var(--c-primary);
+  }
+}
+
+// ---------------------------------------------------------------- primary nav ----
+
+.main-nav {
+  order: 2;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--sp-3);
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.main-nav__list {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  // Two here plus the padding either side of a link puts twenty pixels between
+  // one label and the next, which is the reference portal's spacing. The row had
+  // half that, and the menu read as one long word.
+  gap: 2px;
+}
+
+.main-nav__item {
+  position: relative;
+  display: flex;
+}
+
+.main-nav__link {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0.6rem 9px;
+  font-family: var(--font-heading);
+  font-size: calc(var(--fs-base) * var(--font-scale));
+  font-weight: 500;
+  color: var(--c-navy);
+  white-space: nowrap;
+  border-radius: var(--radius-sm);
+  transition:
+    color var(--transition),
+    background-color var(--transition);
+
+  &:hover,
+  &.is-active {
+    color: var(--c-primary);
+    background: var(--c-primary-soft);
+    text-decoration: none;
+  }
+
+  &.is-cta {
+    margin-left: var(--sp-2);
+    padding-inline: 1.1rem;
+    background: var(--c-primary);
+    color: #fff;
+
+    &:hover {
+      background: var(--c-primary-hover);
+      color: #fff;
+    }
+  }
+}
+
+.main-nav__link--home {
+  // Pulled left a little: an icon has no side bearing the way a word does, so
+  // matching padding leaves it looking further from the lockups than it is.
+  margin-left: calc(var(--sp-5) * -1);
+  // The same measure as every other link, so the gap from Home to the first
+  // label is the twenty pixels the rest of the row uses.
+  padding-inline: 9px;
+
+  app-icon {
+    display: block;
+  }
+}
+
+// The word is for the drawer and for assistive technology; on the bar the icon
+// speaks for itself and saves the row the width of a label.
+.main-nav__home-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+.main-nav__caret {
+  transition: transform var(--transition);
+}
+
+.main-nav__item.is-open > .main-nav__link .main-nav__caret,
+.main-nav__item:hover > .main-nav__link .main-nav__caret {
+  transform: rotate(180deg);
+}
+
+// -------------------------------------------------------------------- submenu ----
+
+.submenu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: var(--z-dropdown);
+  min-width: 260px;
+  padding: var(--sp-2);
+  list-style: none;
+  margin: 0;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-top: 3px solid var(--c-primary);
+  border-radius: 0 0 var(--radius) var(--radius);
+  box-shadow: var(--shadow);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px);
+  transition:
+    opacity var(--transition),
+    transform var(--transition),
+    visibility var(--transition);
+
+  a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-3);
+    padding: 0.55rem 0.75rem;
+    font-size: calc(var(--fs-base) * var(--font-scale));
+    font-weight: 500;
+    color: var(--c-ink-strong);
+    border-radius: var(--radius-sm);
+    border-left: 3px solid transparent;
+
+    &:hover,
+    &.is-active {
+      background: var(--c-surface-tint);
+      color: var(--c-primary);
+      border-left-color: var(--c-primary);
+      text-decoration: none;
+    }
+
+    app-icon {
+      color: var(--c-ink-subtle);
+    }
+  }
+}
+
+// Items near the end of the bar open leftwards so the panel stays on screen.
+.main-nav__item:nth-last-child(-n + 2) .submenu {
+  left: auto;
+  right: 0;
+}
+
+.main-nav__item.has-children:hover > .submenu,
+.main-nav__item.has-children:focus-within > .submenu,
+.main-nav__item.is-open > .submenu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+// ------------------------------------------------------------------- helpline ----
+
+.nav-helpline {
+  display: none;
+  align-items: center;
+  gap: var(--sp-3);
+  color: var(--c-navy);
+
+  span {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.25;
+  }
+
+  small {
+    font-size: calc(var(--fs-xs) * var(--font-scale));
+    color: var(--c-ink-muted);
+  }
+
+  strong {
+    font-family: var(--font-heading);
+    font-size: calc(var(--fs-md) * var(--font-scale));
+  }
+}
+
+.nav-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--z-header) - 1);
+  background: rgba(var(--c-navy-rgb), 0.5);
+  border: 0;
+  cursor: pointer;
+}
+
+// ============================================================== responsive ====
+
+// Shrink the lockups well before the row runs out of room, so that change and the
+// drawer do not land at the same moment. The menu keeps its spacing all the way
+// down: the row has a few hundred pixels to spare at these widths, and squeezing
+// the labels together was buying room nothing needed.
+@media (max-width: 1620px) {
+  .brand__ministry {
+    height: 54px;
+  }
+
+  .brand__scheme {
+    height: 62px;
+  }
+}
+
+// A second step down for the lockups, which buys the horizontal menu another
+// hundred pixels or so of viewport before it has to fold away.
+@media (max-width: 1300px) {
+  .brand__ministry {
+    height: 46px;
+  }
+
+  .brand__scheme {
+    height: 54px;
+  }
+}
+
+// Below this the menu, the two lockups and the reader utilities collide.
+//
+// Measured rather than guessed: at these lockup sizes the row needs about 1090px
+// of viewport, so the drawer takes over at 1150 and the narrowest horizontal
+// state still has real space between the lockups and the first menu item. This
+// was at 1520 for a menu with much longer labels; when the labels were shortened
+// in the CMS the breakpoint was left behind, and the menu folded away on screens
+// with plenty of room for it.
+@media (max-width: 1150px) {
+  .menu-btn {
+    display: grid;
+  }
+
+  // The menu leaves the flow when it becomes a drawer, so it can no longer push
+  // the utilities across. Without this they sit against the logos with the rest
+  // of the row empty beside them.
+  .header-utilities {
+    margin-left: auto;
+  }
+
+  .main-nav {
+    position: fixed;
+    inset: 0 0 0 auto;
+    // Above the Bhashini selector, which sets its own z-index of 1000 inside the
+    // masthead's stacking context and would otherwise show through the drawer.
+    z-index: 1100;
+    width: min(380px, 90vw);
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 0;
+    margin: 0;
+    padding: var(--sp-6) var(--sp-5) var(--sp-8);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background: var(--c-surface);
+    box-shadow: var(--shadow-lg);
+    transform: translateX(100%);
+    transition: transform var(--transition-slow);
+
+    &.is-open {
+      transform: translateX(0);
+    }
+  }
+
+  .main-nav__list {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2px;
+  }
+
+  .main-nav__item {
+    flex-direction: column;
+  }
+
+  .main-nav__home-label {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    clip: auto;
+  }
+
+  .main-nav__link {
+    justify-content: space-between;
+    width: 100%;
+    padding: 0.85rem 0.9rem;
+    font-size: calc(var(--fs-md) * var(--font-scale));
+
+    &.is-cta {
+      margin: var(--sp-3) 0 0;
+      justify-content: center;
+    }
+
+    // Home reads as icon-then-word here, not as a label pushed to the far edge.
+    &.main-nav__link--home {
+      gap: var(--sp-3);
+      justify-content: flex-start;
+    }
+  }
+
+  .submenu {
+    position: static;
+    min-width: 0;
+    max-height: 0;
+    overflow: hidden;
+    padding: 0;
+    border: none;
+    box-shadow: none;
+    background: var(--c-surface-tint);
+    border-radius: var(--radius-sm);
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    transition: max-height var(--transition-slow);
+  }
+
+  .main-nav__item.has-children:hover > .submenu,
+  .main-nav__item.has-children:focus-within > .submenu {
+    max-height: 0;
+  }
+
+  .main-nav__item.is-open > .submenu {
+    max-height: 620px;
+    padding: var(--sp-2);
+    margin-block: var(--sp-1);
+  }
+
+  .nav-helpline {
+    display: flex;
+    margin-top: var(--sp-6);
+    padding-top: var(--sp-5);
+    border-top: 1px solid var(--c-border);
+  }
+}
+
+
+@media (max-width: 720px) {
+  .header-inner {
+    min-height: 68px;
+    gap: var(--sp-3);
+  }
+
+  .brand {
+    gap: var(--sp-2);
+  }
+
+  .brand__ministry {
+    height: 40px;
+  }
+
+  .brand__scheme {
+    height: 48px;
+  }
+
+  .brand__divider {
+    height: 34px;
+  }
+}
+
+// On the narrowest devices the two marks plus three controls do not fit, so the
+// scheme mark alone identifies the site; the ministry is still named in the
+// strip directly above it.
+@media (max-width: 520px) {
+  .brand__ministry,
+  .brand__divider {
+    display: none;
+  }
+
+  .brand__scheme {
+    height: 50px;
+  }
+
+  .top-strip {
+    font-size: 0.6875rem;
+  }
+
+  .header-utilities {
+    gap: 4px;
+  }
+}

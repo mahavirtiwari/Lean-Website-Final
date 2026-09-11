@@ -1,0 +1,20 @@
+// =============================================================================
+//  MSME Competitive (LEAN) Scheme portal - global stylesheet
+//
+//  Layer order matters: tokens define the custom properties everything else
+//  consumes, base resets the document, layout provides the page scaffolding,
+//  and components carry the shared UI vocabulary.
+// =============================================================================
+
+// Must come first: the @font-face rules have to be registered before anything
+// sets a font-family on them.
+@use 'styles/fonts';
+@use 'styles/tokens';
+@use 'styles/base';
+@use 'styles/layout';
+@use 'styles/components';
+@use 'styles/admin';
+@use 'styles/a11y';
+
+// Fonts are self-hosted from /assets/fonts - see styles/_fonts.scss. The portal
+// makes no request to an external CDN, in development or in production.

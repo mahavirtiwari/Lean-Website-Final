@@ -1,0 +1,217 @@
+:host {
+  position: relative;
+  display: inline-flex;
+}
+
+// ---------------------------------------------------------------- trigger ----
+
+.a11y__trigger {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--c-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--c-surface);
+  color: var(--c-slate);
+  transition:
+    background-color var(--transition),
+    border-color var(--transition),
+    color var(--transition);
+
+  svg {
+    width: 22px;
+    height: 22px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  circle {
+    fill: currentColor;
+    stroke: none;
+  }
+
+  &:hover,
+  &.is-open {
+    background: var(--c-primary);
+    border-color: var(--c-primary);
+    color: #fff;
+  }
+}
+
+// ------------------------------------------------------------------ panel ----
+
+.a11y__panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: var(--z-modal);
+  width: 380px;
+  max-width: calc(100vw - 2rem);
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+  box-shadow: 0 18px 46px rgba(10, 31, 46, 0.16);
+  animation: a11y-in 160ms ease-out;
+}
+
+@keyframes a11y-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+.a11y__head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-4) var(--sp-5);
+  border-bottom: 1px solid var(--c-border);
+
+  h2 {
+    flex: 1;
+    font-size: calc(var(--fs-md) * var(--font-scale));
+    margin: 0;
+  }
+}
+
+.a11y__hint {
+  padding: 2px 7px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: calc(var(--fs-xs) * var(--font-scale));
+  color: var(--c-ink-muted);
+  background: var(--c-surface-sunken);
+  border-radius: var(--radius-xs);
+}
+
+.a11y__close {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  font-size: 1.4rem;
+  line-height: 1;
+  color: var(--c-ink-muted);
+  border-radius: var(--radius-xs);
+
+  &:hover {
+    background: var(--c-surface-sunken);
+    color: var(--c-ink-strong);
+  }
+}
+
+// ------------------------------------------------------------------- grid ----
+
+.a11y__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-2);
+  padding: var(--sp-4);
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.a11y__opt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+  padding: var(--sp-3) var(--sp-2);
+  min-height: 92px;
+  text-align: center;
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-sm);
+  background: var(--c-surface);
+  color: var(--c-ink-strong);
+  transition:
+    background-color var(--transition),
+    border-color var(--transition),
+    color var(--transition);
+
+  &:hover {
+    border-color: var(--c-primary);
+    background: var(--c-primary-soft);
+    color: var(--c-primary);
+  }
+
+  &.is-on {
+    background: var(--c-primary);
+    border-color: var(--c-primary);
+    color: #fff;
+  }
+}
+
+.a11y__icon {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+
+  svg {
+    width: 22px;
+    height: 22px;
+  }
+}
+
+.a11y__label {
+  font-family: var(--font-heading);
+  font-size: calc(var(--fs-xs) * var(--font-scale));
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.a11y__value {
+  font-size: calc(var(--fs-xs) * var(--font-scale));
+  opacity: 0.75;
+  font-variant-numeric: tabular-nums;
+}
+
+// ------------------------------------------------------------------- foot ----
+
+.a11y__foot {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-4) var(--sp-5);
+  border-top: 1px solid var(--c-border);
+  background: var(--c-surface-alt);
+  border-radius: 0 0 var(--radius) var(--radius);
+}
+
+.a11y__note {
+  flex: 1;
+  margin: 0;
+  font-size: calc(var(--fs-xs) * var(--font-scale));
+  line-height: var(--lh-snug);
+  color: var(--c-ink-muted);
+}
+
+// ------------------------------------------------------------- responsive ----
+
+@media (max-width: 520px) {
+  .a11y__panel {
+    // Anchor to the viewport rather than the trigger, so the panel cannot be
+    // pushed off-screen on a narrow device.
+    position: fixed;
+    top: auto;
+    right: var(--sp-3);
+    bottom: var(--sp-3);
+    left: var(--sp-3);
+    width: auto;
+    max-width: none;
+  }
+
+  .a11y__grid {
+    max-height: 50vh;
+  }
+
+  .a11y__foot {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

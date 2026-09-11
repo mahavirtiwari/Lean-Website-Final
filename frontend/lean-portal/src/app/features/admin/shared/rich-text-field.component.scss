@@ -1,0 +1,135 @@
+// =============================================================================
+//  Rich text field
+//
+//  A tab strip, a formatting toolbar and either the editable surface or the raw
+//  source. The three parts read as one control, so they share a border rather
+//  than each carrying their own.
+// =============================================================================
+
+.rte {
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+
+  &:focus-within {
+    border-color: var(--c-primary);
+  }
+}
+
+// ------------------------------------------------------------------- tabs ----
+
+.rte__tabs {
+  display: flex;
+  background: var(--c-surface-alt);
+  border-bottom: 1px solid var(--c-border);
+}
+
+.rte__tab {
+  padding: 0.45rem 0.9rem;
+  font-family: var(--font-heading);
+  font-size: calc(var(--fs-xs) * var(--font-scale));
+  font-weight: 600;
+  color: var(--c-ink-muted);
+  border-bottom: 2px solid transparent;
+
+  &:hover {
+    color: var(--c-primary);
+  }
+
+  &.is-active {
+    color: var(--c-primary);
+    border-bottom-color: var(--c-primary);
+    background: var(--c-surface);
+  }
+}
+
+// ---------------------------------------------------------------- toolbar ----
+
+.rte__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px;
+  padding: var(--sp-2);
+  background: var(--c-surface);
+  border-bottom: 1px solid var(--c-border);
+}
+
+.rte__tool {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  color: var(--c-ink-muted);
+  border-radius: var(--radius-xs);
+
+  &:hover {
+    color: var(--c-primary);
+    background: var(--c-primary-soft);
+  }
+}
+
+.rte__divider {
+  width: 1px;
+  height: 20px;
+  margin-inline: var(--sp-2);
+  background: var(--c-border);
+}
+
+// ---------------------------------------------------------------- surface ----
+
+.rte__surface {
+  min-height: 14rem;
+  max-height: 32rem;
+  overflow-y: auto;
+  padding: var(--sp-4);
+  background: var(--c-surface);
+  font-size: calc(var(--fs-base) * var(--font-scale));
+
+  &:focus {
+    outline: none;
+  }
+
+  // The surface previews what the page will look like, but at the console's
+  // scale - full site heading sizes would be overwhelming in a modal.
+  h3 {
+    font-size: calc(var(--fs-lg) * var(--font-scale));
+    margin-block: var(--sp-4) var(--sp-2);
+  }
+
+  h4 {
+    font-size: calc(var(--fs-md) * var(--font-scale));
+    margin-block: var(--sp-3) var(--sp-2);
+  }
+
+  p {
+    margin-bottom: var(--sp-3);
+  }
+
+  ul,
+  ol {
+    margin: 0 0 var(--sp-3) var(--sp-5);
+  }
+
+  blockquote {
+    margin: var(--sp-3) 0;
+    padding-left: var(--sp-4);
+    border-left: 3px solid var(--c-primary);
+    color: var(--c-ink-muted);
+  }
+
+  a {
+    color: var(--c-primary);
+    text-decoration: underline;
+  }
+}
+
+// The source view sits flush inside the shared border.
+.rte .textarea {
+  border: none;
+  border-radius: 0;
+
+  &:focus {
+    box-shadow: none;
+  }
+}
