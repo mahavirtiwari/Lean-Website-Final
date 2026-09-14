@@ -178,6 +178,9 @@ bullets([
     'Signed out after 30 minutes. If you leave the console without touching the mouse or keyboard '
     'for 30 minutes, it signs you out and the sign-in page says so. Save your work before leaving '
     'the desk; anything unsaved is lost.',
+    'On a tablet or a phone the console works, with the list of screens behind the menu button at '
+    'the top left; Escape, or a tap outside it, closes it again. Wide tables scroll sideways '
+    'inside their own frame. A long page is still easier to write at a desk.',
 ])
 shot('cms-login.png', 'The sign-in page, with the verification challenge')
 
@@ -441,6 +444,10 @@ screen('Branding', 'Site',
         'already in the Media library. Remove takes an optional logo off the page; Back to the '
         'original restores the logo the portal was delivered with.',
         'The footer is dark, so the footer logos should be light or white versions.',
+        'Both header logos are shown at every screen size - on a phone they sit on a row of their '
+        'own above the menu button. Upload a lockup that is still legible small, and keep the '
+        'State Emblem in the ministry lockup exactly as it is: it must not be altered, '
+        'recoloured or replaced.',
         'Six themes are offered: Ministry Blue, Forest Green, Heritage Maroon, Royal Purple, '
         'Saffron & Charcoal, and Indigo & Slate. Choose Custom to set the two colours yourself; '
         'the console refuses a colour too light for white text on it to be read.',
@@ -673,6 +680,51 @@ table(['What you see', 'Usually because'], [
 
 para('If none of these explain it, the Activity log will show whether the change was saved and by '
      'whom.')
+
+doc.add_page_break()
+
+# --------------------------------------------------------------- section 7 ----
+doc.add_heading('7. The site on a phone or tablet', level=1)
+
+para('The same pages serve every device; there is no separate mobile site to keep in step, and '
+     'nothing to set per device. What follows is what a visitor on a phone sees, and the few '
+     'things worth knowing when you write a page.')
+
+doc.add_heading('What a visitor on a phone gets', level=2)
+bullets([
+    'One column, with the same content in the same order as on a desktop.',
+    'The Ministry lockup and the scheme mark on their own row, then a row carrying translation, '
+    'the accessibility tools and the Menu button. Scrolling down leaves only that second row at '
+    'the top of the screen, so the menu is always a tap away.',
+    'The menu opens as a panel with a Close button at its top.',
+    'The chat assistant is a round button in the corner rather than a wide one, so it does not '
+    'cover the page.',
+    'The accessibility tools enlarge the text up to 160%. Every page has been checked at that '
+    'size on a small phone: nothing is cut off and nothing has to be scrolled sideways.',
+])
+
+doc.add_heading('What this means for your content', level=2)
+table(['When you...', 'What to do'], [
+    ['Paste a wide table', 'Nothing - a table too wide for the screen scrolls sideways inside its '
+                           'own frame rather than stretching the page. Fewer columns still reads '
+                           'better on a phone.'],
+    ['Paste from Word or another site', 'Check the result on the page. Pasted-in widths (a table '
+                                        'or an image set to a fixed number of pixels) are the one '
+                                        'thing that can still force a phone to scroll sideways.'],
+    ['Write a web address', 'Prefer a link on a few words - "the Udyam portal" - to the address '
+                            'written out. A long address does now wrap rather than run off the '
+                            'screen, but it reads better as a link.'],
+    ['Add an image', 'Upload it in the Media library and let the site size it; it never needs a '
+                     'width. Give it alternative text, which is what a screen reader announces.'],
+    ['Use headings in a page', 'Use the editor\'s headings in order, largest first. The page '
+                               'announces them at the right level for a screen reader on its own.'],
+], widths=[2.1, 4.4])
+
+doc.add_heading('Checking a page yourself', level=2)
+para('Open the page on your own phone, or narrow the browser window on your desktop until it is '
+     'about the width of a phone. The layout should fold into one column and nothing should need '
+     'to be scrolled sideways. If a page does scroll sideways, it is almost always a pasted-in '
+     'width in that page\'s content - remove it, or tell the portal team which page it is.')
 
 doc.add_paragraph()
 p = doc.add_paragraph()
