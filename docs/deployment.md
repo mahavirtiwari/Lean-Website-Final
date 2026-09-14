@@ -3,6 +3,11 @@
 How to stand up the MSME Competitive (LEAN) Scheme portal on Windows Server with
 IIS and SQL Server, and how to deploy each subsequent release.
 
+> **Going live?** Start with [go-live.md](go-live.md). `deploy\Go-Live.ps1` does
+> every step below in order - server checks, IIS, the database, the settings
+> file, the build, HTTPS, verification and backups - and asks only for the
+> passwords. This document explains what each of those steps does and why.
+
 ---
 
 ## 1. Target architecture
@@ -43,7 +48,7 @@ On the **web server**:
 
 On the **database server**: SQL Server 2019 or later.
 
-On the **build machine** (may be the web server): .NET 10 SDK and Node.js 20+.
+On the **build machine** (may be the web server): .NET 10 SDK and Node.js 24 LTS (Angular 22 needs 22.22.3+, 24.15.0+ or 26+).
 
 Confirm the hosting bundle registered correctly:
 
@@ -179,10 +184,12 @@ Three values **must** be set before the API will start in production:
 | `Jwt:Key` | At least 32 bytes. The API refuses to start outside Development without it. |
 | `Seed:AdminPassword` | Used once, to create the first administrator. **Required**: outside Development the API will not create an administrator without it, and logs an error instead. The development default is published in the repository, so it is never used in production. |
 
-Generate a signing key:
+Go-Live.ps1 generates the signing key with a cryptographic random number
+generator. To make one by hand, use the same - not `Get-Random`, which is
+predictable:
 
 ```powershell
-[Convert]::ToBase64String((1..48 | ForEach-Object { Get-Random -Maximum 256 }))
+$b = New-Object byte[] 48; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b); [Convert]::ToBase64String($b)
 ```
 
 ### Environment
@@ -407,13 +414,17 @@ development.
     -ApiAppPoolName LeanPortal-Api
 ```
 
-The script publishes both projects, stops the pools and waits for them to
-release their assemblies, mirrors the output into place while **excluding the
-uploads folder**, restores `appsettings.Production.json`, reapplies write
-permissions, restarts the pools and health-checks `/api/health`.
+The script publishes both projects, keeps the release it is about to replace
+under `C:\inetpub\LeanPortal.releases` (the last three), stops the pools, mirrors
+the new release into place - never touching `uploads`, `logs`, `keys` or
+`appsettings.Production.json` - reapplies write permissions, restarts the pools
+and health-checks `/api/health`.
 
-Use `-SkipBuild` to redeploy an existing publish output, and `-WhatIf` to see
-what it would do without touching the server.
+A server that cannot build (no SDK, no Node.js, no internet for npm and NuGet)
+deploys a package instead: run `deploy\scripts\Build-Package.ps1` on a machine
+that can, copy the zip across, and pass `-PackagePath`. `Rollback-LeanPortal.ps1`
+puts the previous release back. `-WhatIf` shows what would happen without
+touching the server.
 
 ### First start
 
@@ -595,7 +606,7 @@ The portal is configured for 10,000 people using it at the same time.
 | SQL Server | Connection pool of 20–400 (default 100) | `Max Pool Size` in the connection string template |
 | API | Public content served from the output cache (60 s – 5 min, cleared the moment an editor publishes), so most page views do not reach the database at all | `Program.cs` |
 | Visitor counter | Counted in memory and written once every 5 seconds, instead of one UPDATE per visitor on the same row | `VisitorCounter.cs` |
-| Static files | Hashed bundles cached by browsers for a year; Brotli / gzip compression | `web.frontend.config` |
+| Static files | Hashed bundles cached by browsers for a year; gzip compression of scripts, styles, JSON and SVG | `web.frontend.config` switches it on; `Setup-IIS.ps1` sets the types server-wide |
 
 **Rate limits** are per client address, per minute (`RateLimiting` in
 `appsettings.Production.json`):
@@ -678,8 +689,8 @@ a local `IIS AppPool\…` identity will not authenticate — switch the pool to 
 domain service account and grant that account the database roles.
 
 **Deployment fails copying DLLs**
-An application pool did not stop. The script waits 30 seconds; if a request is
-hung, stop the pool by hand and re-run with `-SkipBuild`.
+An application pool did not stop. The script waits 60 seconds and copies nothing
+if a pool is still running; stop the pool by hand and run the deployment again.
 
 **The site works on the server but nothing answers on 443 from outside**
 The handshake check in `Enable-Https.ps1` runs against `127.0.0.1`, so it passes

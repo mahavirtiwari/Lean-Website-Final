@@ -38,3 +38,7 @@ Desktop.ini
 .idea/
 .vscode/*
 !.vscode/extensions.json
+
+# Go-Live transcripts and locally built deployment packages
+deploy/logs/
+deploy/packages/

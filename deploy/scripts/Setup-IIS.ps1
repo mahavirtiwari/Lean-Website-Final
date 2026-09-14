@@ -59,7 +59,8 @@ param(
     [int]    $Port = 80,
     [string] $CertificateThumbprint = '',
     [int]    $QueueLength = 20000,
-    [int]    $ConcurrentRequestLimit = 20000
+    [int]    $ConcurrentRequestLimit = 20000,
+    [switch] $Quiet
 )
 
 $ErrorActionPreference = 'Stop'
@@ -159,6 +160,39 @@ if ($PSCmdlet.ShouldProcess('IIS', 'Create the application pools')) {
     Set-WebConfigurationProperty -PSPath 'MACHINE/WEBROOT/APPHOST' `
         -Filter 'system.webServer/serverRuntime' -Name appConcurrentRequestLimit -Value $ConcurrentRequestLimit
     Write-Host "  queue length $QueueLength per pool, $ConcurrentRequestLimit concurrent requests"
+
+    # Production is ASP.NET Core's default, but set here explicitly, so that a
+    # machine-wide ASPNETCORE_ENVIRONMENT=Development left by a developer tool
+    # cannot switch the live API to development settings.
+    $envFilter = "system.applicationHost/applicationPools/add[@name='$apiPool']/environmentVariables"
+    $current = Get-WebConfigurationProperty -PSPath 'MACHINE/WEBROOT/APPHOST' `
+        -Filter "$envFilter/add[@name='ASPNETCORE_ENVIRONMENT']" -Name value -ErrorAction SilentlyContinue
+    if ($null -eq $current) {
+        Add-WebConfigurationProperty -PSPath 'MACHINE/WEBROOT/APPHOST' -Filter $envFilter -Name '.' `
+            -Value @{ name = 'ASPNETCORE_ENVIRONMENT'; value = 'Production' }
+    }
+    elseif ("$($current.Value)" -ne 'Production') {
+        Set-WebConfigurationProperty -PSPath 'MACHINE/WEBROOT/APPHOST' `
+            -Filter "$envFilter/add[@name='ASPNETCORE_ENVIRONMENT']" -Name value -Value 'Production'
+    }
+    Write-Host "  ASPNETCORE_ENVIRONMENT=Production on $apiPool"
+
+    # Which static files IIS compresses is a server-wide setting: IIS refuses the
+    # httpCompression section in a site's web.config. The site's own web.config
+    # only switches compression on. Scripts, styles, JSON and SVG are added to
+    # IIS's default list of text types.
+    foreach ($mime in 'text/*', 'application/javascript', 'application/json', 'image/svg+xml', 'application/xml') {
+        $filter = "system.webServer/httpCompression/staticTypes/add[@mimeType='$mime']"
+        $enabled = Get-WebConfigurationProperty -PSPath 'MACHINE/WEBROOT/APPHOST' -Filter $filter -Name enabled -ErrorAction SilentlyContinue
+        if ($null -eq $enabled) {
+            Add-WebConfigurationProperty -PSPath 'MACHINE/WEBROOT/APPHOST' -Filter 'system.webServer/httpCompression/staticTypes' `
+                -Name '.' -AtIndex 0 -Value @{ mimeType = $mime; enabled = 'True' }
+        }
+        elseif (-not [bool]$enabled.Value) {
+            Set-WebConfigurationProperty -PSPath 'MACHINE/WEBROOT/APPHOST' -Filter $filter -Name enabled -Value 'True'
+        }
+    }
+    Write-Host '  static compression for scripts, styles, JSON and SVG'
 }
 
 # --------------------------------------------------------------------- site --
@@ -227,6 +261,7 @@ if ($PSCmdlet.ShouldProcess($apiRoot, 'Apply folder permissions')) {
 
 Write-Host ''
 Write-Host 'IIS provisioning complete.' -ForegroundColor Green
+if ($Quiet) { return }
 Write-Host ''
 Write-Host 'Next steps:' -ForegroundColor Yellow
 Write-Host "  1. Create the database and login:  database\scripts\01-create-database.sql"
