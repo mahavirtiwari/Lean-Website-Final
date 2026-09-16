@@ -217,7 +217,7 @@ if ($PSCmdlet.ShouldProcess($SiteRoot, 'Deploy the LEAN portal')) {
         # redirect points at a port nothing is listening on, which would take the
         # site off the air - so it comes back out until Enable-Https.ps1 has proved
         # the certificate works.
-        $site = Get-Website | Where-Object { $_.PhysicalPath.TrimEnd('\') -eq $SiteRoot } | Select-Object -First 1
+        $site = Get-Website | Where-Object { "$($_.PhysicalPath)".TrimEnd('\') -eq $SiteRoot } | Select-Object -First 1
         $httpsBindings = @()
         if ($site) { $httpsBindings = @(Get-WebBinding -Name $site.Name -Protocol https -ErrorAction SilentlyContinue) }
 

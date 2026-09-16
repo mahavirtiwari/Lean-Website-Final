@@ -302,11 +302,33 @@ function Find-CertificateFile([string] $Pattern, [string] $Explicit) {
     return ''
 }
 
+# The names a certificate covers, defensively. A certificate with no subject
+# alternative names has an empty DnsNameList, and piping that into Where-Object
+# sends one null through, which strict mode reports as a missing property - the
+# check then fails on any unrelated certificate that happens to be in the store.
+function Get-CertificateNames($Certificate) {
+    $names = @()
+    $list = $null
+    if ($Certificate.PSObject.Properties['DnsNameList']) { $list = $Certificate.DnsNameList }
+    foreach ($entry in @($list)) {
+        if ($null -eq $entry) { continue }
+        if ($entry -is [string]) { $names += $entry }
+        elseif ($entry.PSObject.Properties['Unicode']) { $names += $entry.Unicode }
+        elseif ($entry.PSObject.Properties['Punycode']) { $names += $entry.Punycode }
+    }
+    if ($names.Count -eq 0) {
+        # No SAN list: fall back to the common name in the subject.
+        $cn = $Certificate.GetNameInfo([System.Security.Cryptography.X509Certificates.X509NameType]::DnsName, $false)
+        if ($cn) { $names += $cn }
+    }
+    return $names
+}
+
 function Get-InstalledSiteCertificate {
     $parent = $S.HostName.Split('.', 2)[1]
     return @(Get-ChildItem Cert:\LocalMachine\My | Where-Object {
             $_.HasPrivateKey -and $_.NotAfter -gt (Get-Date) -and
-            @($_.DnsNameList | Where-Object { $_.Unicode -eq $S.HostName -or $_.Unicode -eq "*.$parent" }).Count -gt 0
+            @(Get-CertificateNames $_ | Where-Object { $_ -eq $S.HostName -or $_ -eq "*.$parent" }).Count -gt 0
         } | Sort-Object NotAfter -Descending)
 }
 

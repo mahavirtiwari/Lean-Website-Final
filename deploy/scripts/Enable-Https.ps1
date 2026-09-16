@@ -82,6 +82,28 @@ Set-StrictMode -Version Latest
 
 Import-Module WebAdministration -ErrorAction Stop
 
+# The names a certificate covers, defensively. A certificate with no subject
+# alternative names has an empty DnsNameList, and piping that into Where-Object
+# sends one null through, which strict mode reports as a missing property - the
+# check then fails on any unrelated certificate that happens to be in the store.
+function Get-CertificateNames($Certificate) {
+    $names = @()
+    $list = $null
+    if ($Certificate.PSObject.Properties['DnsNameList']) { $list = $Certificate.DnsNameList }
+    foreach ($entry in @($list)) {
+        if ($null -eq $entry) { continue }
+        if ($entry -is [string]) { $names += $entry }
+        elseif ($entry.PSObject.Properties['Unicode']) { $names += $entry.Unicode }
+        elseif ($entry.PSObject.Properties['Punycode']) { $names += $entry.Punycode }
+    }
+    if ($names.Count -eq 0) {
+        # No SAN list: fall back to the common name in the subject.
+        $cn = $Certificate.GetNameInfo([System.Security.Cryptography.X509Certificates.X509NameType]::DnsName, $false)
+        if ($cn) { $names += $cn }
+    }
+    return $names
+}
+
 function Write-Step([string] $Message) {
     Write-Host ''
     Write-Host "==> $Message" -ForegroundColor Cyan
@@ -127,9 +149,8 @@ else {
 
     $candidates = @(Get-ChildItem $store | Where-Object {
             $_.HasPrivateKey -and $_.NotAfter -gt (Get-Date) -and
-            @($_.DnsNameList | Where-Object {
-                    $_.Unicode -eq $HostName -or
-                    ($parentDomain -and $_.Unicode -eq "*.$parentDomain")
+            @(Get-CertificateNames $_ | Where-Object {
+                    $_ -eq $HostName -or ($parentDomain -and $_ -eq "*.$parentDomain")
                 }).Count -gt 0
         })
 
@@ -160,7 +181,7 @@ if (-not $certificate.HasPrivateKey) {
     throw 'That certificate has no private key, so IIS cannot serve TLS with it.'
 }
 
-$names = @($certificate.DnsNameList | ForEach-Object { $_.Unicode })
+$names = @(Get-CertificateNames $certificate)
 $covered = $names | Where-Object {
     $_ -eq $HostName -or ($_.StartsWith('*.') -and $HostName.EndsWith($_.Substring(1)))
 }
