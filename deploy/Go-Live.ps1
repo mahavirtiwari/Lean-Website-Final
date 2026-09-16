@@ -1112,21 +1112,35 @@ EXEC (@sql);
     }
 
     Write-Info 'Running the nightly task now, as SYSTEM, to prove it works...'
-    $started = (Get-Date).AddSeconds(-5)
+    $logFile = Join-Path $BackupRoot 'backup.log'
+    $linesBefore = 0
+    if (Test-Path $logFile) { $linesBefore = @(Get-Content $logFile).Count }
+
     Start-ScheduledTask -TaskPath '\LEAN portal\' -TaskName 'LEAN portal - nightly backup'
-    # Wait for this run to begin and then end: a task just started can still
-    # report its previous state for a moment.
+
+    # Watched by state alone, and by what the backup writes to its own log. This
+    # used to also require LastRunTime to be later than the local clock reading
+    # taken just before starting the task, and on the live server that never
+    # became true even though the backup had run and finished - so the step sat
+    # waiting for half an hour on work that was already done.
+    $task = { (Get-ScheduledTask -TaskPath '\LEAN portal\' -TaskName 'LEAN portal - nightly backup').State }
+    $startBy = (Get-Date).AddMinutes(2)
+    while ((& $task) -ne 'Running' -and (Get-Date) -lt $startBy) { Start-Sleep -Seconds 2 }
     $deadline = (Get-Date).AddMinutes(30)
-    do {
-        Start-Sleep -Seconds 5
-        $task = Get-ScheduledTask -TaskPath '\LEAN portal\' -TaskName 'LEAN portal - nightly backup'
-        $info = Get-ScheduledTaskInfo -TaskPath '\LEAN portal\' -TaskName 'LEAN portal - nightly backup'
-        $finished = $task.State -ne 'Running' -and $info.LastRunTime -ge $started
-    } while (-not $finished -and (Get-Date) -lt $deadline)
-    $result = $info.LastTaskResult
-    if ($result -eq 0) { Write-Pass "First backup taken - see $BackupRoot" }
+    while ((& $task) -eq 'Running' -and (Get-Date) -lt $deadline) { Start-Sleep -Seconds 5 }
+
+    $result = (Get-ScheduledTaskInfo -TaskPath '\LEAN portal\' -TaskName 'LEAN portal - nightly backup').LastTaskResult
+    $written = @()
+    if (Test-Path $logFile) { $written = @(Get-Content $logFile | Select-Object -Skip $linesBefore) }
+
+    if ($result -eq 0 -and @($written | Where-Object { $_ -notmatch 'FAILED' }).Count -gt 0) {
+        $written | ForEach-Object { Write-Info "  $_" }
+        Write-Pass "First backup taken - see $BackupRoot"
+    }
     else {
-        Write-Fail "The backup task ended with code $result - see $BackupRoot\backup.log"
+        Write-Fail "The backup task ended with code $result"
+        $written | ForEach-Object { Write-Info "  $_" }
+        Write-Info "  Full log: $logFile"
         return $false
     }
     Write-Info 'Copy the backup folder off this server regularly: a backup on the same disk does not survive losing the disk.'
