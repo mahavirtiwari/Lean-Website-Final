@@ -412,7 +412,14 @@
 // was at 1520 for a menu with much longer labels; when the labels were shortened
 // in the CMS the breakpoint was left behind, and the menu folded away on screens
 // with plenty of room for it.
-@media (max-width: 1150px) {
+// The drawer layout: the menu leaves the bar and becomes a panel.
+//
+// Used at two moments. Below 1150px there is plainly no room. Above it, the
+// masthead measures itself: the labels come from the console, so a menu that
+// fits one wording overflows with another, and an overflowing bar does not
+// wrap - it slides left across the ministry lockup. The component adds
+// .is-compact when the row it needs is wider than the row it has.
+@mixin drawer-layout {
   .menu-btn {
     display: grid;
   }
@@ -570,6 +577,14 @@
     padding-top: var(--sp-5);
     border-top: 1px solid var(--c-border);
   }
+}
+
+@media (max-width: 1150px) {
+  @include drawer-layout;
+}
+
+.site-header.is-compact {
+  @include drawer-layout;
 }
 
 

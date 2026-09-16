@@ -1,9 +1,12 @@
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   ElementRef,
   HostListener,
   computed,
+  effect,
   inject,
   signal,
   viewChild,
@@ -44,7 +47,18 @@ import { IconComponent } from '../../shared/components/icon.component';
   templateUrl: './site-header.component.html',
   styleUrl: './site-header.component.scss',
 })
-export class SiteHeaderComponent {
+export class SiteHeaderComponent implements AfterViewInit {
+  private readonly destroyRef = inject(DestroyRef);
+
+  private readonly headerInner = viewChild<ElementRef<HTMLElement>>('headerInner');
+  private readonly navList = viewChild<ElementRef<HTMLElement>>('navList');
+
+  /** The menu is a drawer because the bar has no room for it. */
+  protected readonly compact = signal(false);
+
+  /** Width the bar needs, measured while it is a bar. */
+  private required = 0;
+
   protected readonly content = inject(ContentService);
   protected readonly ui = inject(UiService);
 
@@ -97,6 +111,74 @@ export class SiteHeaderComponent {
   }).format(new Date());
 
   protected readonly mainMenu = computed(() => this.navigation()?.main ?? []);
+
+  ngAfterViewInit(): void {
+    this.measure();
+
+    const inner = this.headerInner()?.nativeElement;
+    if (!inner || typeof ResizeObserver === 'undefined') return;
+
+    const observer = new ResizeObserver(() => this.measure());
+    observer.observe(inner);
+    // The menu's own width changes when its labels arrive and when the reader
+    // enlarges the text, neither of which changes the row around it.
+    const list = this.navList()?.nativeElement;
+    if (list) observer.observe(list);
+    this.destroyRef.onDestroy(() => observer.disconnect());
+  }
+
+  // The menu arrives after the first measurement - it comes from the console over
+  // the network - and can change again when an editor changes it. Its width is
+  // only measurable as a row, so the drawer is dropped first and the row measured
+  // again; this also covers browsers without ResizeObserver.
+  private readonly remeasure = effect(() => {
+    this.mainMenu();
+    this.required = 0;
+    this.compact.set(false);
+    setTimeout(() => this.measure());
+  });
+
+  @HostListener('window:resize')
+  protected onResize(): void {
+    this.measure();
+  }
+
+  /** Bar or drawer, decided by what the row can hold. */
+  private measure(): void {
+    const inner = this.headerInner()?.nativeElement;
+    const list = this.navList()?.nativeElement;
+    if (!inner || !list) return;
+    const brand = inner.querySelector<HTMLElement>('.brand');
+    const utilities = inner.querySelector<HTMLElement>('.header-utilities');
+    if (!brand || !utilities) return;
+
+    const row = getComputedStyle(inner);
+    // The row's own padding is not space the bar can use.
+    const available =
+      inner.clientWidth - (parseFloat(row.paddingLeft) || 0) - (parseFloat(row.paddingRight) || 0);
+
+    if (!this.compact()) {
+      // Measured item by item. The menu cannot wrap: when it runs out of room it
+      // overflows the start of the row, across the ministry lockup, and neither
+      // the list's width nor its scrollWidth grows to say so - the items keep
+      // their own width, so they are what is asked for.
+      const items = Array.from(list.children);
+      const between = parseFloat(getComputedStyle(list).columnGap) || 0;
+      const rowGap = parseFloat(row.columnGap) || 0;
+      this.required =
+        brand.offsetWidth +
+        items.reduce((total, item) => total + item.getBoundingClientRect().width, 0) +
+        between * Math.max(0, items.length - 1) +
+        utilities.offsetWidth +
+        // The two gaps in the row, and a little air so the menu never sits hard
+        // against the lockup.
+        rowGap * 2 +
+        16;
+    }
+
+    // Only with the menu measured: before it arrives there is nothing to judge.
+    if (this.required > 0) this.compact.set(this.required > available);
+  }
 
   @HostListener('window:scroll')
   protected onScroll(): void {

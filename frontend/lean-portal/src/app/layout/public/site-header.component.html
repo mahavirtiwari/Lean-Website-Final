@@ -21,8 +21,8 @@
 </div>
 
 <!-- ------------------------------------------------------------------ masthead -->
-<header class="site-header" [class.is-stuck]="scrolled()">
-  <div class="container header-inner">
+<header class="site-header" [class.is-stuck]="scrolled()" [class.is-compact]="compact()">
+  <div #headerInner class="container header-inner">
     <!-- Government identity, then the scheme mark. -->
     <div class="brand">
       <!-- Both logos, and where each opens, are set under Branding in the console.
@@ -99,7 +99,7 @@
         </button>
       </div>
 
-      <ul class="main-nav__list">
+      <ul #navList class="main-nav__list">
         @for (item of mainMenu(); track item.id) {
           <li
             class="main-nav__item"
