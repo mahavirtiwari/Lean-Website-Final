@@ -210,6 +210,21 @@ if ($PSCmdlet.ShouldProcess($SiteName, 'Create the site and API application')) {
         Write-Host "  site $SiteName already exists"
         Set-ItemProperty "IIS:\Sites\$SiteName" physicalPath $SiteRoot
         Set-ItemProperty "IIS:\Sites\$SiteName" applicationPool $webPool
+
+        # An existing site keeps whatever host names it already answers on - it may
+        # be serving a previous address, and taking that away is not this script's
+        # business. The new one is added beside them.
+        if ($HostName) {
+            $wanted = "*:${Port}:$HostName"
+            $existing = @(Get-WebBinding -Name $SiteName -Protocol http |
+                ForEach-Object { $_.bindingInformation })
+            if ($existing -notcontains $wanted) {
+                New-WebBinding -Name $SiteName -Protocol http -Port $Port -HostHeader $HostName
+                Write-Host "  added binding $wanted"
+            }
+            else { Write-Host "  binding $wanted already present" }
+            if ($existing.Count -gt 0) { Write-Host "  also answering on: $($existing -join ', ')" }
+        }
     }
 
     if ($CertificateThumbprint) {
