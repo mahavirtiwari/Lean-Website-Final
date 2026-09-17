@@ -86,12 +86,18 @@ public static partial class DataSeeder
         [
             // --- Identity -------------------------------------------------------------
             S("site.name", "MSME Competitive (LEAN) Scheme", "Site name", "General", order: 1),
-            S("site.shortName", "LEAN", "Short name", "General", order: 2),
             S("site.tagline", "Enhancing the competitiveness of Indian MSMEs through Lean manufacturing",
-                "Tagline", "General", order: 3),
+                "Tagline", "General", order: 3,
+                desc: "One line under the lockups in the footer."),
             S("site.ministry", "Ministry of Micro, Small and Medium Enterprises", "Ministry", "General", order: 4),
-            S("site.ministryShort", "Ministry of MSME", "Ministry (short form)", "General", order: 5),
-            S("site.government", "Government of India", "Government", "General", order: 5),
+            // The strip at the very top carries the ministry in both languages. The
+            // Hindi was written into the page and nothing else, so an editor who
+            // changed the English name left the two disagreeing.
+            S("site.ministryHindi", "सूक्ष्म, लघु और " +
+                "मध्यम उद्यम मंत्रालय",
+                "Ministry (Hindi)", "General", order: 5,
+                desc: "Shown beside the English name in the government strip at the top of every page."),
+            S("site.government", "Government of India", "Government", "General", order: 6),
             // The four logo places, each with the address it opens and the words a
             // screen reader says for it. Edited together under Branding in the console.
             S("site.ministryLogoUrl", "/assets/images/brand/msme-logo.svg", "Header logo, left - image", "General", "image", 6,
@@ -214,7 +220,15 @@ public static partial class DataSeeder
             S("links.leanApp", "https://lean.msme.gov.in", "Transactional LEAN system base URL",
                 "Application", "url", 0,
                 desc: "Relative addresses on this tab and on the login tiles are resolved against this."),
-            S("app.msmeRegister", "/VerifyUdyam/Register", "MSME registration URL", "Application", "url", 1),
+            // Which paths belong to the application rather than to this site. A menu
+            // item pointing at one of these is sent there; anything else is a page
+            // here, and a menu entry for a screen not on this list used to look right
+            // in the console and land on "page not found" on the site.
+            S("links.leanAppPaths", "/VerifyUdyam, /OEM/, /www/, /AgencyLogin",
+                "Paths that belong to the LEAN system", "Application", "text", 1,
+                desc: "Separated by commas. A menu or link starting with one of these opens on the " +
+                      "transactional system above instead of looking for a page on this site."),
+            S("app.msmeRegister", "/VerifyUdyam/Register", "MSME registration URL", "Application", "url", 2),
 
             // --- Feature toggles ------------------------------------------------------
             S("feature.newsTicker", "true", "Show the What is New ticker", "Features", "boolean", 1),
@@ -430,6 +444,10 @@ public static partial class DataSeeder
             "links.udyam", "links.zed", "links.innovative", "links.leanLms",
             "links.qci", "links.npc", "links.launchVideo",
             "contact.ministryNote",
+            // A second address for the ministry, beside the one the header logo
+            // already opens; a short site name and a short ministry name that no
+            // screen has ever had room to use.
+            "links.msmeMinistry", "site.shortName", "site.ministryShort",
         ];
 
         var rows = await db.SiteSettings.Where(x => retired.Contains(x.Key)).ToListAsync(ct);

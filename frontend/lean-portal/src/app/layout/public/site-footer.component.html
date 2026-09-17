@@ -23,6 +23,10 @@
         }
       </div>
 
+      @if (settings()['site.tagline']; as tagline) {
+        <p class="footer-tagline">{{ tagline }}</p>
+      }
+
       <address class="footer-address">
         <p>{{ settings()['contact.addressLine1'] }}</p>
         <p>{{ settings()['contact.addressLine2'] }}</p>
@@ -171,5 +175,11 @@
         <p class="footer-legal__updated">Last updated: {{ updated }}</p>
       }
     </div>
+
+    <!-- The ministry's own words about what this site is and is not. Written in
+         the console under Footer wording, and carried on every page. -->
+    @if (settings()['footer.disclaimer']; as disclaimer) {
+      <p class="container site-footer__disclaimer">{{ disclaimer }}</p>
+    }
   </div>
 </footer>

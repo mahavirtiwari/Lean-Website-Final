@@ -1,5 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Injectable, computed, effect, inject, signal } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { environment } from '../../../environments/environment';
 import { ContentService } from './content.service';
@@ -42,6 +42,23 @@ export class UiService {
   constructor() {
     this.applyFontScale(this.fontScale());
     this.applyContrast(this.highContrast());
+
+    // The icon an editor uploads under Branding. Applied when the settings arrive,
+    // because index.html is a fixed file: without this the field was editable, the
+    // upload succeeded, and every tab kept the icon shipped with the build.
+    effect(() => {
+      const icon = this.content.setting('site.faviconUrl', '');
+      if (!icon) return;
+
+      const head = this.document.head;
+      let link = head.querySelector<HTMLLinkElement>('link[rel="icon"]');
+      if (!link) {
+        link = this.document.createElement('link');
+        link.rel = 'icon';
+        head.appendChild(link);
+      }
+      if (link.getAttribute('href') !== icon) link.setAttribute('href', icon);
+    });
   }
 
   // ------------------------------------------------------------- loading ----
@@ -108,7 +125,13 @@ export class UiService {
       'og:type': 'website',
       'og:image': options.image,
       'og:url': options.url ?? this.document.location?.href,
+      'og:site_name': this.content.setting('site.name', ''),
       'twitter:card': options.image ? 'summary_large_image' : 'summary',
+      // The ministry's own account, so a card shared from the site is attributed
+      // to it. Written in the console with or without the leading @.
+      'twitter:site': this.content.setting('social.twitterHandle', '')
+        ? '@' + this.content.setting('social.twitterHandle', '').replace(/^@/, '')
+        : null,
       'twitter:title': pageTitle,
       'twitter:description': options.description || this.content.setting('seo.defaultDescription', ''),
       'twitter:image': options.image,

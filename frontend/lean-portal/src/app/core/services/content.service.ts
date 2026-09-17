@@ -44,6 +44,9 @@ import { ApiService } from './api.service';
  * Site chrome (settings and navigation) is fetched once and replayed, because
  * every page needs it and it changes only when an editor publishes.
  */
+/** The application's screens, until the console says otherwise. */
+const DEFAULT_LEAN_APP_PATHS = '/VerifyUdyam, /OEM/, /www/, /AgencyLogin';
+
 @Injectable({ providedIn: 'root' })
 export class ContentService {
   private readonly api = inject(ApiService);
@@ -111,10 +114,27 @@ export class ContentService {
   appLink(url: string | null | undefined): string {
     if (!url) return '';
     if (/^(https?:)?\/\//i.test(url)) return url;
-    if (url.startsWith('/VerifyUdyam') || url.startsWith('/www/') || url.startsWith('/OEM/') || url.startsWith('/AgencyLogin')) {
+    if (this.isLeanAppPath(url)) {
       return `${this.setting('links.leanApp', 'https://lean.msme.gov.in')}${url}`;
     }
     return url;
+  }
+
+  /**
+   * Whether a path belongs to the transactional LEAN system rather than to this
+   * site.
+   *
+   * The prefixes are a setting, not a list in this file. A menu item added in the
+   * console pointing at any other screen of the application - a consultant
+   * registration, a new login - looked right in the console and landed on "page
+   * not found" here, with nothing to say the list existed.
+   */
+  private isLeanAppPath(url: string): boolean {
+    return this.setting('links.leanAppPaths', DEFAULT_LEAN_APP_PATHS)
+      .split(',')
+      .map((prefix) => prefix.trim())
+      .filter((prefix) => prefix.length > 0)
+      .some((prefix) => url.toLowerCase().startsWith(prefix.toLowerCase()));
   }
 
   getSitemap(): Observable<SitemapNode[]> {

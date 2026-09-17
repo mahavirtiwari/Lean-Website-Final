@@ -74,7 +74,9 @@ import { UiService } from '../../../core/services/ui.service';
 
       .maintenance__logo {
         height: 64px;
-        margin-bottom: var(--sp-5);
+        // Every image on the site is a block, so the panel's text-align centres
+        // the words around the mark but leaves the mark itself at the left edge.
+        margin: 0 auto var(--sp-5);
       }
 
       .maintenance__eyebrow {
