@@ -21,7 +21,12 @@
 </div>
 
 <!-- ------------------------------------------------------------------ masthead -->
-<header class="site-header" [class.is-stuck]="scrolled()" [class.is-compact]="compact()">
+<header
+  class="site-header"
+  [class.is-stuck]="scrolled()"
+  [class.is-compact]="compact()"
+  [class.is-stacked]="stacked()"
+>
   <div #headerInner class="container header-inner">
     <!-- Government identity, then the scheme mark. -->
     <div class="brand">

@@ -28,9 +28,16 @@ import { IconComponent } from '../../shared/components/icon.component';
  *
  * The masthead is a single row: the Ministry lockup and scheme mark on the left,
  * the two-level menu next, then the reader utilities - Bhashini translation and
- * the accessibility toolkit. Below 1180px the menu collapses into a drawer while
- * the utilities stay in the bar, so translation and accessibility remain one tap
- * away on a phone.
+ * the accessibility toolkit.
+ *
+ * The row carries all three only while there is room for all three. The menu's
+ * width is not something this code can know - the labels are written in the
+ * console, and the Bhashini plugin grows its own control into a language selector
+ * once it loads - so the masthead measures itself and takes the widest of three
+ * layouts that fits: the menu beside the lockup, the menu on a row of its own
+ * beneath it, or the menu in a drawer behind the button. Below 1150px it is the
+ * drawer, where the utilities stay in the bar so translation and accessibility
+ * remain one tap away on a phone.
  *
  * Reader preferences (text size, contrast and the rest) belong to
  * AccessibilityService via the toolkit, not to this component.
@@ -56,11 +63,15 @@ export class SiteHeaderComponent implements AfterViewInit {
   private readonly headerInner = viewChild<ElementRef<HTMLElement>>('headerInner');
   private readonly navList = viewChild<ElementRef<HTMLElement>>('navList');
 
-  /** The menu is a drawer because the bar has no room for it. */
+  /** The menu is a drawer because not even a row of its own would hold it. */
   protected readonly compact = signal(false);
 
-  /** Width the bar needs, measured while it is a bar. */
-  private required = 0;
+  /** The menu is on a row of its own, because it does not fit beside the lockup. */
+  protected readonly stacked = signal(false);
+
+  /** What the menu alone needs, and what the whole row needs; measured as a bar. */
+  private menuWidth = 0;
+  private rowWidth = 0;
 
   protected readonly content = inject(ContentService);
   protected readonly ui = inject(UiService);
@@ -127,6 +138,11 @@ export class SiteHeaderComponent implements AfterViewInit {
     // enlarges the text, neither of which changes the row around it.
     const list = this.navList()?.nativeElement;
     if (list) observer.observe(list);
+    // So does the utilities block: the Bhashini plugin replaces its own button
+    // with a language selector some seconds after the page has settled, and that
+    // is around 200px the row had a moment ago and no longer has.
+    const utilities = inner.querySelector<HTMLElement>('.header-utilities');
+    if (utilities) observer.observe(utilities);
     this.destroyRef.onDestroy(() => observer.disconnect());
 
     // The interface font arrives after the first paint and changes the width of
@@ -141,8 +157,10 @@ export class SiteHeaderComponent implements AfterViewInit {
   // without ResizeObserver.
   private readonly remeasure = effect(() => {
     this.mainMenu();
-    this.required = 0;
+    this.menuWidth = 0;
+    this.rowWidth = 0;
     this.compact.set(false);
+    this.stacked.set(false);
     afterNextRender(() => this.measure(), { injector: this.injector });
   });
 
@@ -181,19 +199,29 @@ export class SiteHeaderComponent implements AfterViewInit {
       const items = Array.from(list.children);
       const between = parseFloat(getComputedStyle(list).columnGap) || 0;
       const rowGap = parseFloat(row.columnGap) || 0;
-      this.required =
-        brand.offsetWidth +
+
+      this.menuWidth =
         items.reduce((total, item) => total + item.getBoundingClientRect().width, 0) +
-        between * Math.max(0, items.length - 1) +
-        utilities.offsetWidth +
-        // The two gaps in the row, and a little air so the menu never sits hard
-        // against the lockup.
-        rowGap * 2 +
-        16;
+        between * Math.max(0, items.length - 1);
+
+      // The lockup and the utilities beside it, the two gaps between them, and a
+      // little air so the menu never sits hard against the lockup.
+      this.rowWidth =
+        brand.offsetWidth + this.menuWidth + utilities.offsetWidth + rowGap * 2 + 16;
     }
 
     // Only with the menu measured: before it arrives there is nothing to judge.
-    if (this.required > 0) this.compact.set(this.required > available);
+    if (this.menuWidth <= 0) return;
+
+    // Three ways to carry the menu, in the order a reader would want them: beside
+    // the lockup, on a row of its own beneath it, or - when even that is not wide
+    // enough - behind the button. The button is the last resort and not the second,
+    // because a menu nobody can see is worse than a masthead one line taller.
+    const besideTheLockup = this.rowWidth <= available;
+    const onItsOwnRow = this.menuWidth <= available;
+
+    this.compact.set(!besideTheLockup && !onItsOwnRow);
+    this.stacked.set(!besideTheLockup && onItsOwnRow);
   }
 
   @HostListener('window:scroll')

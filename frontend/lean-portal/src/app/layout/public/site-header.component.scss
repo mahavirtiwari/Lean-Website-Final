@@ -587,6 +587,74 @@
   @include drawer-layout;
 }
 
+// A little less of everything, where the row is nearly wide enough.
+//
+// On a 1920 screen at 125% scaling - the commonest desktop there is - the page is
+// 1536px wide, and the lockups, the full menu and the reader utilities came to
+// 1492px against the 1478px the row had. Fourteen pixels, and the menu left the
+// bar for the button. Fifty of those pixels are the Bhashini language selector,
+// which is why switching Bhashini off in the console brought the menu back.
+//
+// The row gives up some of the gap either side of the menu and each label a
+// little of its padding, which is sixty pixels across the bar - enough for all
+// three to stay on one line at this width, with the selector and without it.
+@media (min-width: 1151px) and (max-width: 1620px) {
+  .header-inner {
+    gap: var(--sp-3);
+  }
+
+  .main-nav__link {
+    padding-inline: 7px;
+  }
+}
+
+// One more step for the lockups. Above 1300 only: below it they are already
+// smaller still, and this must not put them back up.
+@media (min-width: 1301px) and (max-width: 1620px) {
+  .brand__ministry {
+    height: 50px;
+  }
+
+  .brand__scheme {
+    height: 58px;
+  }
+}
+
+// The menu on a row of its own, beneath the lockup.
+//
+// The step between the two. The row is not wide enough to carry the lockup, the
+// menu and the reader utilities side by side - the full menu asks for about
+// 1470px of it - but the screen is wide enough to show the whole menu. A laptop
+// at 1366, or a 1920 screen at 125% scaling, lands here. Dropping straight to the
+// button put the navigation of a government portal behind three lines on an
+// ordinary desktop, which is the one thing a masthead must not do.
+//
+// Only where the bar exists: below 1151px the menu is a drawer whatever this says.
+@media (min-width: 1151px) {
+  .site-header.is-stacked {
+    .header-inner {
+      flex-wrap: wrap;
+      row-gap: 0;
+      min-height: 0;
+      padding-bottom: 0;
+    }
+
+    // The menu no longer sits between them, so nothing pushes these to the right.
+    .header-utilities {
+      order: 2;
+      margin-left: auto;
+    }
+
+    .main-nav {
+      order: 3;
+      flex-basis: 100%;
+      justify-content: center;
+      padding-block: 4px;
+      border-top: 1px solid var(--c-border);
+    }
+  }
+}
+
 
 @media (max-width: 720px) {
   .header-inner {
