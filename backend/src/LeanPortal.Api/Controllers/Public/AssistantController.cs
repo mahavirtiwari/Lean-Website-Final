@@ -1,10 +1,11 @@
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using LeanPortal.Application.Contracts;
 using LeanPortal.Domain.Common;
 using LeanPortal.Domain.Enums;
 using LeanPortal.Infrastructure.Persistence;
 using LeanPortal.Infrastructure.Services.Integrations;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
@@ -29,7 +30,8 @@ namespace LeanPortal.Api.Controllers.Public;
 [Route("assistant")]
 [EnableRateLimiting("public")]
 [OutputCache(NoStore = true)]
-public partial class AssistantController(ApplicationDbContext db, IIntegrationCaller caller) : ApiControllerBase(db)
+public partial class AssistantController(ApplicationDbContext db, IIntegrationCaller caller, IMemoryCache cache)
+    : ApiControllerBase(db)
 {
     /// <summary>Words too common to say anything about what a question is about.</summary>
     private static readonly HashSet<string> Noise = new(StringComparer.OrdinalIgnoreCase)
@@ -83,20 +85,20 @@ public partial class AssistantController(ApplicationDbContext db, IIntegrationCa
         var matches = new List<AssistantMatchDto>();
         var phrase = question.ToLowerInvariant();
 
-        void Consider(string title, string url, string kind, params (string? Text, int Weight)[] fields)
+        foreach (var source in await CorpusAsync(ct))
         {
-            var score = fields.Sum(f => Score(terms, f.Text, f.Weight));
+            var score = source.Fields.Sum(f => Score(terms, f.Text, f.Weight));
 
             // The whole question appearing in a title is as strong a sign as there is.
-            if (phrase.Length > 5 && title.Contains(phrase, StringComparison.OrdinalIgnoreCase)) score += 12;
+            if (phrase.Length > 5 && source.Title.Contains(phrase, StringComparison.OrdinalIgnoreCase)) score += 12;
 
-            if (score <= 0) return;
+            if (score <= 0) continue;
 
             // The passage to quote: the field that answers best, but a sentence rather
             // than a name, a state or a phone number where there is one - quoting "QCI"
             // back at someone who asked how to reach QCI answers nothing.
-            var candidates = fields
-                .Where(f => !string.IsNullOrWhiteSpace(f.Text) && f.Text != title)
+            var candidates = source.Fields
+                .Where(f => !string.IsNullOrWhiteSpace(f.Text) && f.Text != source.Title)
                 .ToList();
             var best = (candidates.Any(f => f.Text!.Length >= 40)
                     ? candidates.Where(f => f.Text!.Length >= 40)
@@ -105,91 +107,8 @@ public partial class AssistantController(ApplicationDbContext db, IIntegrationCa
                 .Select(f => f.Text!)
                 .FirstOrDefault() ?? string.Empty;
 
-            matches.Add(new AssistantMatchDto(title, Snippet(best, terms), url, kind, score));
+            matches.Add(new AssistantMatchDto(source.Title, Snippet(best, terms), source.Url, source.Kind, score));
         }
-
-        // ------------------------------------------------------------------ FAQs ----
-        // First because a question asked here is usually a question answered there.
-        foreach (var faq in await Db.Faqs.AsNoTracking()
-                     .Where(f => f.Status == PublishStatus.Published)
-                     .Select(f => new { f.Question, f.Answer })
-                     .ToListAsync(ct))
-            Consider(faq.Question, "/faqs", "FAQ", (faq.Question, 6), (Plain(faq.Answer), 2));
-
-        // ----------------------------------------------------------------- pages ----
-        foreach (var page in await Db.Pages.AsNoTracking()
-                     .Where(p => p.Status == PublishStatus.Published)
-                     .Select(p => new { p.Slug, p.Title, p.Summary, p.Body })
-                     .ToListAsync(ct))
-            Consider(page.Title, page.Slug == "home" ? "/" : "/" + page.Slug, "Page",
-                (page.Title, 6), (page.Summary, 3), (Plain(page.Body), 1));
-
-        // --------------------------------------------------------- scheme levels ----
-        foreach (var level in await Db.SchemeLevels.AsNoTracking()
-                     .Where(l => l.IsActive)
-                     .Select(l => new { l.Name, l.Tagline, l.Description, l.Deliverables, l.FeeStructure, l.Duration })
-                     .ToListAsync(ct))
-            Consider(level.Name, "/about-scheme/scheme-levels", "Scheme level",
-                (level.Name, 6), (level.Tagline, 3), (Plain(level.Description), 2),
-                (Plain(level.Deliverables), 2), (level.FeeStructure, 3), (level.Duration, 2));
-
-        // ------------------------------------------------------------ components ----
-        foreach (var component in await Db.SchemeComponents.AsNoTracking()
-                     .Where(c => c.IsActive)
-                     .Select(c => new { c.Title, c.ShortDescription, c.Description })
-                     .ToListAsync(ct))
-            Consider(component.Title, "/about-scheme/scheme-components", "Scheme component",
-                (component.Title, 5), (component.ShortDescription, 3), (Plain(component.Description), 1));
-
-        // ------------------------------------------------------------ incentives ----
-        foreach (var incentive in await Db.Incentives.AsNoTracking()
-                     .Where(i => i.IsActive)
-                     .Select(i => new { i.Title, i.Description, i.IssuerName, i.State, i.Level, i.Category })
-                     .ToListAsync(ct))
-            Consider(incentive.Title, "/benefits-incentives/" + IncentiveSegment(incentive.Category), "Incentive",
-                (incentive.Title, 5), (Plain(incentive.Description), 2), (incentive.IssuerName, 2),
-                (incentive.State, 2), (incentive.Level, 2));
-
-        // ------------------------------------------------------------- documents ----
-        var texts = await Db.DocumentTexts.AsNoTracking()
-            .ToDictionaryAsync(t => t.DocumentId, t => t.Text, ct);
-
-        foreach (var doc in await Db.Documents.AsNoTracking()
-                     .Where(d => d.Status == PublishStatus.Published)
-                     .Select(d => new { d.Id, d.Title, d.Description, d.FileType })
-                     .ToListAsync(ct))
-            Consider(doc.Title, "/downloads", $"{doc.FileType} document",
-                (doc.Title, 5), (doc.Description, 2), (texts.GetValueOrDefault(doc.Id), 1));
-
-        // --------------------------------------------------------------- notices ----
-        foreach (var post in await Db.Posts.AsNoTracking()
-                     .Where(p => p.Status == PublishStatus.Published)
-                     .Select(p => new { p.Slug, p.Title, p.Excerpt, p.Body })
-                     .ToListAsync(ct))
-            Consider(post.Title, "/media/news/" + post.Slug, "Notice",
-                (post.Title, 5), (post.Excerpt, 2), (Plain(post.Body), 1));
-
-        // ------------------------------------------------------------ programmes ----
-        foreach (var programme in await Db.AwarenessProgrammes.AsNoTracking()
-                     .Where(p => p.Status == PublishStatus.Published)
-                     .Select(p => new { p.Title, p.Description, p.ProgrammeType, p.State, p.District, p.Venue })
-                     .ToListAsync(ct))
-            Consider(programme.Title,
-                programme.ProgrammeType.Contains("Awareness", StringComparison.OrdinalIgnoreCase)
-                    ? "/programmes/awareness" : "/programmes/training",
-                programme.ProgrammeType,
-                (programme.Title, 4), (Plain(programme.Description), 1), (programme.State, 2),
-                (programme.District, 2), (programme.Venue, 1));
-
-        // -------------------------------------------------------------- agencies ----
-        foreach (var agency in await Db.Partners.AsNoTracking()
-                     .Where(p => p.Type == PartnerType.ImplementationAgency && p.IsActive)
-                     .Select(p => new { p.Name, p.ShortName, p.Description, p.Address, p.Phone, p.Email })
-                     .ToListAsync(ct))
-            Consider(agency.ShortName is { Length: > 0 } s ? $"{agency.Name} ({s})" : agency.Name,
-                "/implementation-agency", "Implementing agency",
-                (agency.Name, 5), (agency.ShortName, 5), (Plain(agency.Description), 2),
-                (agency.Address, 1), (agency.Phone, 1), (agency.Email, 1));
 
         var top = matches
             .OrderByDescending(m => m.Score)
@@ -206,6 +125,138 @@ public partial class AssistantController(ApplicationDbContext db, IIntegrationCa
             : string.IsNullOrWhiteSpace(top[0].Snippet) ? top[0].Title : top[0].Snippet;
 
         return new AssistantReplyDto(answer, top, top.Count == 0 ? await SuggestionsAsync(ct) : []);
+    }
+
+    /// <summary>One thing the assistant can point at, and the fields it is matched on.</summary>
+    private sealed record Source(string Title, string Url, string Kind, (string? Text, int Weight)[] Fields);
+
+    private const string CorpusKey = "assistant:corpus";
+
+    /// <summary>
+    /// How long the searchable copy of the site is kept.
+    ///
+    /// Building it reads every published page, notice, incentive and document -
+    /// a single document's extracted text runs to 200,000 characters - and strips
+    /// the markup out of all of it. Done for each question asked, a few visitors
+    /// typing in the assistant box would allocate and scan hundreds of megabytes a
+    /// minute. It is built once and shared instead; an edit in the console shows in
+    /// the answers within the minute.
+    /// </summary>
+    private static readonly TimeSpan CorpusFor = TimeSpan.FromMinutes(1);
+
+    /// <summary>One build at a time, so a cold cache is not built once per visitor.</summary>
+    private static readonly SemaphoreSlim CorpusGate = new(1, 1);
+
+    private async Task<IReadOnlyList<Source>> CorpusAsync(CancellationToken ct)
+    {
+        if (cache.TryGetValue(CorpusKey, out IReadOnlyList<Source>? kept) && kept is not null) return kept;
+
+        await CorpusGate.WaitAsync(ct);
+        try
+        {
+            if (cache.TryGetValue(CorpusKey, out kept) && kept is not null) return kept;
+
+            var built = await BuildCorpusAsync(ct);
+            cache.Set(CorpusKey, built, CorpusFor);
+            return built;
+        }
+        finally
+        {
+            CorpusGate.Release();
+        }
+    }
+
+    private async Task<IReadOnlyList<Source>> BuildCorpusAsync(CancellationToken ct)
+    {
+        var sources = new List<Source>();
+
+        void Add(string title, string url, string kind, params (string? Text, int Weight)[] fields) =>
+            sources.Add(new Source(title, url, kind, fields));
+
+        // ------------------------------------------------------------------ FAQs ----
+        // First because a question asked here is usually a question answered there.
+        foreach (var faq in await Db.Faqs.AsNoTracking()
+                     .Where(f => f.Status == PublishStatus.Published)
+                     .Select(f => new { f.Question, f.Answer })
+                     .ToListAsync(ct))
+            Add(faq.Question, "/faqs", "FAQ", (faq.Question, 6), (Plain(faq.Answer), 2));
+
+        // ----------------------------------------------------------------- pages ----
+        foreach (var page in await Db.Pages.AsNoTracking()
+                     .Where(p => p.Status == PublishStatus.Published)
+                     .Select(p => new { p.Slug, p.Title, p.Summary, p.Body })
+                     .ToListAsync(ct))
+            Add(page.Title, page.Slug == "home" ? "/" : "/" + page.Slug, "Page",
+                (page.Title, 6), (page.Summary, 3), (Plain(page.Body), 1));
+
+        // --------------------------------------------------------- scheme levels ----
+        foreach (var level in await Db.SchemeLevels.AsNoTracking()
+                     .Where(l => l.IsActive)
+                     .Select(l => new { l.Name, l.Tagline, l.Description, l.Deliverables, l.FeeStructure, l.Duration })
+                     .ToListAsync(ct))
+            Add(level.Name, "/about-scheme/scheme-levels", "Scheme level",
+                (level.Name, 6), (level.Tagline, 3), (Plain(level.Description), 2),
+                (Plain(level.Deliverables), 2), (level.FeeStructure, 3), (level.Duration, 2));
+
+        // ------------------------------------------------------------ components ----
+        foreach (var component in await Db.SchemeComponents.AsNoTracking()
+                     .Where(c => c.IsActive)
+                     .Select(c => new { c.Title, c.ShortDescription, c.Description })
+                     .ToListAsync(ct))
+            Add(component.Title, "/about-scheme/scheme-components", "Scheme component",
+                (component.Title, 5), (component.ShortDescription, 3), (Plain(component.Description), 1));
+
+        // ------------------------------------------------------------ incentives ----
+        foreach (var incentive in await Db.Incentives.AsNoTracking()
+                     .Where(i => i.IsActive)
+                     .Select(i => new { i.Title, i.Description, i.IssuerName, i.State, i.Level, i.Category })
+                     .ToListAsync(ct))
+            Add(incentive.Title, "/benefits-incentives/" + IncentiveSegment(incentive.Category), "Incentive",
+                (incentive.Title, 5), (Plain(incentive.Description), 2), (incentive.IssuerName, 2),
+                (incentive.State, 2), (incentive.Level, 2));
+
+        // ------------------------------------------------------------- documents ----
+        var texts = await Db.DocumentTexts.AsNoTracking()
+            .ToDictionaryAsync(t => t.DocumentId, t => t.Text, ct);
+
+        foreach (var doc in await Db.Documents.AsNoTracking()
+                     .Where(d => d.Status == PublishStatus.Published)
+                     .Select(d => new { d.Id, d.Title, d.Description, d.FileType })
+                     .ToListAsync(ct))
+            Add(doc.Title, "/downloads", $"{doc.FileType} document",
+                (doc.Title, 5), (doc.Description, 2), (texts.GetValueOrDefault(doc.Id), 1));
+
+        // --------------------------------------------------------------- notices ----
+        foreach (var post in await Db.Posts.AsNoTracking()
+                     .Where(p => p.Status == PublishStatus.Published)
+                     .Select(p => new { p.Slug, p.Title, p.Excerpt, p.Body })
+                     .ToListAsync(ct))
+            Add(post.Title, "/media/news/" + post.Slug, "Notice",
+                (post.Title, 5), (post.Excerpt, 2), (Plain(post.Body), 1));
+
+        // ------------------------------------------------------------ programmes ----
+        foreach (var programme in await Db.AwarenessProgrammes.AsNoTracking()
+                     .Where(p => p.Status == PublishStatus.Published)
+                     .Select(p => new { p.Title, p.Description, p.ProgrammeType, p.State, p.District, p.Venue })
+                     .ToListAsync(ct))
+            Add(programme.Title,
+                programme.ProgrammeType.Contains("Awareness", StringComparison.OrdinalIgnoreCase)
+                    ? "/programmes/awareness" : "/programmes/training",
+                programme.ProgrammeType,
+                (programme.Title, 4), (Plain(programme.Description), 1), (programme.State, 2),
+                (programme.District, 2), (programme.Venue, 1));
+
+        // -------------------------------------------------------------- agencies ----
+        foreach (var agency in await Db.Partners.AsNoTracking()
+                     .Where(p => p.Type == PartnerType.ImplementationAgency && p.IsActive)
+                     .Select(p => new { p.Name, p.ShortName, p.Description, p.Address, p.Phone, p.Email })
+                     .ToListAsync(ct))
+            Add(agency.ShortName is { Length: > 0 } s ? $"{agency.Name} ({s})" : agency.Name,
+                "/implementation-agency", "Implementing agency",
+                (agency.Name, 5), (agency.ShortName, 5), (Plain(agency.Description), 2),
+                (agency.Address, 1), (agency.Phone, 1), (agency.Email, 1));
+
+        return sources;
     }
 
     private static string IncentiveSegment(IncentiveCategory category) => category switch

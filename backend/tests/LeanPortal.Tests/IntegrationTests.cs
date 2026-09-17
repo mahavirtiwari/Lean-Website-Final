@@ -125,6 +125,21 @@ public class GrievanceMatrixTests
     public void A_complete_path_is_accepted() =>
         Assert.True(GrievanceMatrix.IsValidPath(Parsed, "MSME", "Query", "LEAN", "Payment Related"));
 
+    [Fact]
+    public void A_choice_sent_past_the_end_of_a_branch_is_refused()
+    {
+        var shallow = GrievanceMatrix.Parse("QCI", """
+            { "options": [ { "name": "MSME", "children": [ { "name": "Complaint" } ] } ] }
+            """)!;
+
+        Assert.True(GrievanceMatrix.IsValidPath(shallow, "MSME", "Complaint", null, null));
+
+        // Nothing follows "Complaint" in this matrix, so nothing may be sent for the
+        // levels after it: those words go straight into Zoho's picklist fields.
+        Assert.False(GrievanceMatrix.IsValidPath(shallow, "MSME", "Complaint", null, "anything at all"));
+        Assert.False(GrievanceMatrix.IsValidPath(shallow, "MSME", "Complaint", "made up", null));
+    }
+
     [Theory]
     [InlineData("MSME", "Query", "LEAN", null)]              // stops short of the last level
     [InlineData("MSME", "Query", "Assessor", "Ethical Issue")] // mixes two branches

@@ -139,10 +139,16 @@ public class AdminHelpdeskController(
             ok = true;
             result = $"Connected. Tickets will be raised in the \"{department}\" department.";
         }
-        catch (Exception ex) when (ex is ZohoDeskException or HttpRequestException or TaskCanceledException)
+        // Every failure, not only the ones with a worded message: Zoho answering a
+        // proxy's block page with a 200 throws while the body is parsed, and an
+        // administrator pressing Test deserves that as a sentence and a recorded
+        // result rather than as a 500 with nothing written down.
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
         {
             ok = false;
-            result = ex.Message;
+            result = ex is ZohoDeskException or HttpRequestException or TaskCanceledException
+                ? ex.Message
+                : $"The reply from Zoho could not be read ({ex.GetType().Name}: {ex.Message}).";
             logger.LogWarning(ex, "Zoho Desk connection test failed");
         }
 

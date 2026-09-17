@@ -179,6 +179,10 @@ public static class ApiServiceExtensions
         var formsPerMinute = config.GetValue("RateLimiting:FormsPerMinute", 5);
         var loginPerMinute = config.GetValue("RateLimiting:LoginPerMinute", 8);
         var captchaPerMinute = config.GetValue("RateLimiting:CaptchaPerMinute", 30);
+        // Looking a certificate up sends nothing and changes nothing; it only costs
+        // one call to the provider. The form allowance would stop an officer on the
+        // sixth certificate of the morning, and everyone else in that office with him.
+        var lookupPerMinute = config.GetValue("RateLimiting:LookupPerMinute", 60);
 
         services.AddRateLimiter(options =>
         {
@@ -205,6 +209,14 @@ public static class ApiServiceExtensions
                 _ => new FixedWindowRateLimiterOptions
                 {
                     PermitLimit = captchaPerMinute, Window = TimeSpan.FromMinutes(1), QueueLimit = 0
+                }));
+
+            // A read-only query put to a provider on the visitor's behalf.
+            options.AddPolicy("lookup", ctx => RateLimitPartition.GetFixedWindowLimiter(
+                ClientKey(ctx),
+                _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = lookupPerMinute, Window = TimeSpan.FromMinutes(1), QueueLimit = 0
                 }));
 
             options.AddPolicy("login", ctx => RateLimitPartition.GetFixedWindowLimiter(

@@ -20,7 +20,11 @@ import { IconComponent } from './icon.component';
   imports: [IconComponent],
   template: `
     <div class="captcha">
-      @if (mode() === 'image') {
+      @if (failed()) {
+        <p class="captcha__failed" role="alert">
+          The verification could not be loaded. Please press refresh to try again.
+        </p>
+      } @else if (mode() === 'image') {
         <!-- The picture says nothing to a screen reader; the switch below does. -->
         <div class="captcha__image" [innerHTML]="svg()" aria-hidden="true"></div>
       } @else {
@@ -75,6 +79,15 @@ import { IconComponent } from './icon.component';
         color: var(--c-ink-strong);
       }
 
+      .captcha__failed {
+        margin: 0;
+        padding: 0.7rem 1rem;
+        border: 1px solid var(--c-danger, #b3261e);
+        border-radius: var(--radius-sm);
+        color: var(--c-danger, #b3261e);
+        font-size: var(--fs-sm);
+      }
+
       .captcha__refresh {
         display: grid;
         place-items: center;
@@ -120,6 +133,9 @@ export class CaptchaComponent {
   protected readonly svg = signal<SafeHtml | null>(null);
   protected readonly question = signal<string | null>(null);
 
+  /** The challenge could not be fetched - said so, rather than showing a spent one. */
+  protected readonly failed = signal(false);
+
   protected readonly questionId = computed(() => `${this.answerId()}-question`);
 
   /** What the answer box should ask for. */
@@ -141,9 +157,19 @@ export class CaptchaComponent {
   refresh(): void {
     this.content.getCaptcha(this.mode()).subscribe({
       next: (challenge) => {
+        this.failed.set(false);
         this.challengeId.set(challenge.id);
         this.svg.set(challenge.svg ? this.sanitizer.bypassSecurityTrustHtml(challenge.svg) : null);
         this.question.set(challenge.question ?? null);
+      },
+      // A challenge that did not arrive must not leave the last one on screen: it
+      // has already been used, so the form would refuse every further attempt with
+      // "the characters did not match" and nothing to say why.
+      error: () => {
+        this.failed.set(true);
+        this.challengeId.set('');
+        this.svg.set(null);
+        this.question.set(null);
       },
     });
   }

@@ -100,7 +100,15 @@ public static class GrievanceMatrix
 
         foreach (var choice in choices)
         {
-            if (level is null) return string.IsNullOrWhiteSpace(choice);
+            // Past the end of this branch nothing more may be given - and the rest
+            // are still looked at rather than returned on, or a choice sent after an
+            // empty one would reach the helpdesk's custom fields unchecked.
+            if (level is null)
+            {
+                if (!string.IsNullOrWhiteSpace(choice)) return false;
+                continue;
+            }
+
             if (string.IsNullOrWhiteSpace(choice)) return false;
 
             var match = level.FirstOrDefault(o => string.Equals(o.Name, choice.Trim(), StringComparison.Ordinal));

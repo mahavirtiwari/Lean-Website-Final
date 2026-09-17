@@ -54,7 +54,15 @@ public sealed class VisitorCounter(IServiceScopeFactory scopes, ILogger<VisitorC
     public async Task FlushAsync(CancellationToken ct)
     {
         await _gate.WaitAsync(ct);
+
+        // The batch moves from the one figure to the other in the same breath.
+        // Taken out of _pending and only added to _stored once the database had
+        // answered, the total read in between was short by the whole batch - the
+        // counter in the footer visibly went backwards every few seconds.
         var batch = Interlocked.Exchange(ref _pending, 0);
+        var carried = batch > 0 && Interlocked.Read(ref _stored) >= 0;
+        if (carried) Interlocked.Add(ref _stored, batch);
+
         try
         {
             using var scope = scopes.CreateScope();
@@ -68,7 +76,8 @@ public sealed class VisitorCounter(IServiceScopeFactory scopes, ILogger<VisitorC
         }
         catch
         {
-            // Not written: keep them for the next attempt.
+            // Not written: keep them for the next attempt, where they are counted again.
+            if (carried) Interlocked.Add(ref _stored, -batch);
             Interlocked.Add(ref _pending, batch);
             throw;
         }

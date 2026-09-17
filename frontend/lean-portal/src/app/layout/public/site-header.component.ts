@@ -5,6 +5,8 @@ import {
   DestroyRef,
   ElementRef,
   HostListener,
+  Injector,
+  afterNextRender,
   computed,
   effect,
   inject,
@@ -49,6 +51,7 @@ import { IconComponent } from '../../shared/components/icon.component';
 })
 export class SiteHeaderComponent implements AfterViewInit {
   private readonly destroyRef = inject(DestroyRef);
+  private readonly injector = inject(Injector);
 
   private readonly headerInner = viewChild<ElementRef<HTMLElement>>('headerInner');
   private readonly navList = viewChild<ElementRef<HTMLElement>>('navList');
@@ -125,17 +128,22 @@ export class SiteHeaderComponent implements AfterViewInit {
     const list = this.navList()?.nativeElement;
     if (list) observer.observe(list);
     this.destroyRef.onDestroy(() => observer.disconnect());
+
+    // The interface font arrives after the first paint and changes the width of
+    // every label, so the first measurement was of the fallback font.
+    document.fonts?.ready.then(() => this.measure());
   }
 
   // The menu arrives after the first measurement - it comes from the console over
   // the network - and can change again when an editor changes it. Its width is
   // only measurable as a row, so the drawer is dropped first and the row measured
-  // again; this also covers browsers without ResizeObserver.
+  // again once the browser has drawn it as a row; this also covers browsers
+  // without ResizeObserver.
   private readonly remeasure = effect(() => {
     this.mainMenu();
     this.required = 0;
     this.compact.set(false);
-    setTimeout(() => this.measure());
+    afterNextRender(() => this.measure(), { injector: this.injector });
   });
 
   @HostListener('window:resize')
@@ -150,14 +158,22 @@ export class SiteHeaderComponent implements AfterViewInit {
     if (!inner || !list) return;
     const brand = inner.querySelector<HTMLElement>('.brand');
     const utilities = inner.querySelector<HTMLElement>('.header-utilities');
-    if (!brand || !utilities) return;
+    const nav = inner.querySelector<HTMLElement>('.main-nav');
+    if (!brand || !utilities || !nav) return;
 
     const row = getComputedStyle(inner);
     // The row's own padding is not space the bar can use.
     const available =
       inner.clientWidth - (parseFloat(row.paddingLeft) || 0) - (parseFloat(row.paddingRight) || 0);
 
-    if (!this.compact()) {
+    // The layout the browser has actually applied, not the one this component
+    // asked for. The drawer is also switched on by the narrow-screen media query,
+    // which this component knows nothing about, and its own class reaches the DOM
+    // a tick after the signal is set. A drawer's rows are each as wide as the
+    // drawer, so measuring them would ask for thousands of pixels - and since the
+    // figure is only ever taken while the menu is a bar, the bar would then never
+    // come back at any width.
+    if (getComputedStyle(nav).position !== 'fixed') {
       // Measured item by item. The menu cannot wrap: when it runs out of room it
       // overflows the start of the row, across the ministry lockup, and neither
       // the list's width nor its scrollWidth grows to say so - the items keep

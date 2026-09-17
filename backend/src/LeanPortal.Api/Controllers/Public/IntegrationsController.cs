@@ -101,7 +101,7 @@ public class IntegrationsController(
 
     /// <summary>Checks a certificate through the provider's API.</summary>
     [HttpGet("certificate-verification/lookup")]
-    [EnableRateLimiting("forms")]
+    [EnableRateLimiting("lookup")]
     [OutputCache(NoStore = true)]
     [ProducesResponseType<IntegrationLookupDto>(StatusCodes.Status200OK)]
     public async Task<ActionResult<IntegrationLookupDto>> Verify([FromQuery] string? number, CancellationToken ct)
